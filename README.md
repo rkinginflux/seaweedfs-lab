@@ -110,9 +110,13 @@ merges, the copy here is what the lab runs, compiled into a custom Telegraf imag
   override (port-forward, ingress). A configured server the master does not know
   has no slot information — omit it rather than reporting `0`.
 - **Free volume slots are the real capacity limit, not disk bytes.** A volume
-  server stops accepting new volumes at `maxVolumes` (35 here) even though the
-  disk is 21 % used. That is exactly what the dashboard shows: 34/35 volumes,
-  1 free slot. Growing means adding `dataDirs` or servers, not more disk.
+  server stops accepting new volumes at `maxVolumes` even with plenty of free
+  disk. This lab hit 35/35 at 18 % disk usage: the filer began returning 500 on
+  PUT (`No writable volumes and no free volumes left`), and the InfluxDB 3
+  ingester — whose WAL and Parquet files live in the `lab` bucket — stopped
+  ingesting entirely until `maxVolumes` was raised to 46. The monitor caught it
+  (free slots went 21 → 1 → 0) before the writes failed; raising the slot count is
+  a Helm value change plus a volume-server restart.
 - **`local-path` PVCs are node-local.** A single volume-server replica on
   `local-path` is a single-node failure domain; losing that node means recovering
   volumes by hand (see `docs/runbook.md` for the incident that taught us this).

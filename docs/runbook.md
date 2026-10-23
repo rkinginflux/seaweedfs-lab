@@ -14,7 +14,11 @@ kubectl -n s3 exec deploy/seaweedfs-filer -- \
 
 - **volume slots** — `maxVolumeSlots` − volumes. At 0 the master cannot grow a
   new volume and writes fail, even with free disk. This is the limit that bit this
-  lab: 1 free slot with the disk only 21 % used.
+  lab: it reached 35/35 with the disk only 18 % used, and every S3 PUT started
+  returning 500 (`No writable volumes and no free volumes left`), which stalled the
+  InfluxDB 3 ingester. Raising `volume.dataDirs[].maxVolumes` 35 → 46 made the
+  master grow 7 new volumes for the `lab` collection immediately and ingestion
+  resumed on the next flush.
 - **disk bytes** — per-disk `used_percent` from `seaweedfs_disk`.
 
 To add capacity:

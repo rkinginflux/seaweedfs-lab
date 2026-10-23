@@ -24,31 +24,37 @@ Sizing as deployed (`helm/seaweedfs-values.yaml`):
 
 ```
 master   1 replica   data 5Gi (local-path)   logs 1Gi
-volume   1 replica   data1 50Gi (local-path) maxVolumes: 35
+volume   1 replica   data1 50Gi (local-path) maxVolumes: 46
 filer    1 replica   data 5Gi (local-path)   S3 enabled, bucket "lab"
 admin    1 replica   data 5Gi (local-path)
 worker   2 replicas  jobType: vacuum,volume_balance
 ```
 
-### What "35 volume slots" means
+### What "volume slots" means
 
-SeaweedFS pre-allocates volumes of 30 GB each. `maxVolumes: 35` means this volume
-server can hold 35 of them, i.e. roughly 1 TB of logical capacity, and — more
-importantly — it stops accepting new volumes when the slots run out, regardless of
-free disk space.
+SeaweedFS allocates volumes in 30 GB chunks. `maxVolumes` is how many of them this
+volume server may hold; when the slots run out the master cannot grow a new volume
+**regardless of free disk space**, and any S3 write that needs a new volume fails
+with HTTP 500 at the filer (`No writable volumes and no free volumes left`).
+
+That is not theoretical: this lab filled all 35 slots while the disk was only 18 %
+used, and the InfluxDB 3 ingester — which keeps its WAL and Parquet files in the
+`lab` bucket — stalled completely until slots were added. `maxVolumes` is now 46
+(35 existing volumes + 11 more, the number that fits in the ~354 GB free at 30 GB
+per volume).
 
 `/dir/status` reports both numbers, which is why the cluster dashboard puts them
 side by side:
 
 ```
-volume_count      14 → 34   (grows as data arrives)
-max_volume_slots  35
-free_volume_slots 21 → 1    (the real capacity headroom)
+volume_count      14 → 42   (grows as data arrives; 35 at slot exhaustion)
+max_volume_slots  46        (was 35)
+free_volume_slots 21 → 0 → 4 (the real capacity headroom)
 ```
 
-At the time of the screenshots the disk was 21 % used (359 GiB free) while only
-one volume slot was left. Watching disk bytes alone would have missed the wall
-entirely.
+At the time of the screenshots the disk was 21 % used (359 GiB free) while a single
+volume slot was left. Watching disk bytes alone would have missed the wall
+entirely — and it did: the slots hit 0 an hour later.
 
 ### Collections and replication
 

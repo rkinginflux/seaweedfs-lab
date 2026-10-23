@@ -42,14 +42,16 @@ filer:
   tolerations: "- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"seaweedfs\"\n  effect: \"NoSchedule\"\n"
 
 volume:
-  # One volume server, 35 volume slots, 50Gi claim. The claim is NOT a filesystem
+  # One volume server, 46 volume slots, 50Gi claim. The claim is NOT a filesystem
   # quota: SeaweedFS stops writing when maxVolumes is reached, not at the PVC size.
+  # 46 = the 35 volumes that existed when the cluster hit 35/35 + 11 more, matching
+  # the ~354 GB free on the node at 30 GB per volume. Raise only with real disk.
   dataDirs:
     - name: data1
       type: persistentVolumeClaim
       storageClass: local-path
       size: 50Gi
-      maxVolumes: 35
+      maxVolumes: 46
   tolerations: "- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"seaweedfs\"\n  effect: \"NoSchedule\"\n"
 
 admin:
