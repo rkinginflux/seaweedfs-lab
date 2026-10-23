@@ -1,6 +1,6 @@
 # SeaweedFS lab — object storage with Telegraf and Grafana observability
 
-A small, honest write-up of a SeaweedFS deployment I run in a home/lab Kubernetes
+A small, write-up of a SeaweedFS deployment I run in a home/lab Kubernetes
 cluster, together with the monitoring stack built around it: a Telegraf input
 plugin for SeaweedFS, an InfluxDB 3 bucket, and two Grafana dashboards.
 
