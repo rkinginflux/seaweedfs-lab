@@ -1,0 +1,81 @@
+# Telegraf DaemonSet values for the SeaweedFS lab.
+#
+# The image is a stock Telegraf 1.40-alpine with the seaweedfs input plugin
+# compiled in (see ../telegraf-plugin and the build recipe in docs/deployment.md).
+# Replace the registry path with your own build.
+envFromSecret: telegraf-influxdb3-token
+
+image:
+  repo: "king0770/telegraf"
+  tag: "1.40.7-seaweedfs"
+  pullPolicy: "IfNotPresent"
+
+config:
+  agent:
+    collection_jitter: "0s"
+    debug: false
+    flush_interval: "10s"
+    flush_jitter: "0s"
+    hostname: "$HOSTNAME"
+    interval: "10s"
+    logfile: ""
+    metric_batch_size: 1000
+    metric_buffer_limit: 10000
+    omit_hostname: false
+    precision: ""
+    quiet: false
+    round_interval: true
+
+  processors:
+    - enum:
+        mapping:
+          dest: "status_code"
+          fields: ["status"]
+          value_mappings:
+            critical: 3
+            healthy: 1
+            problem: 2
+
+  outputs:
+    - influxdb_v2:
+        bucket: "telegraf"
+        timeout: "30s"
+        # $TOKEN comes from the telegraf-influxdb3-token secret (envFromSecret)
+        token: "$TOKEN"
+        urls:
+          - "http://influxdb3-querier.influxdb3.svc.cluster.local:8181"
+
+  inputs:
+    - cpu:
+        collect_cpu_time: false
+        percpu: true
+        report_active: false
+        totalcpu: true
+    - disk:
+        ignore_fs: ["tmpfs", "devtmpfs", "devfs", "iso9660", "overlay", "aufs", "squashfs"]
+    - diskio: {}
+    - kernel: {}
+    - mem: {}
+    - net: {}
+    - processes: {}
+    - swap: {}
+    - system: {}
+    - internal:
+        collect_memstats: true
+    - kube_inventory:
+        url: "https://kubernetes.default.svc"
+        resource_exclude: ["secrets"]
+        bearer_token: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+        insecure_skip_verify: true
+        tags:
+          cluster: "lab"
+    # InfluxDB 3 own metrics
+    - prometheus:
+        bearer_token_string: "$TOKEN"
+        urls:
+          - "http://influxdb3-querier.influxdb3.svc.cluster.local:8181/metrics"
+    # The SeaweedFS input plugin from ../telegraf-plugin. Volume servers are
+    # discovered through the master topology, which resolves inside the cluster.
+    - seaweedfs:
+        servers:
+          - "http://seaweedfs-master.s3.svc.cluster.local:9333"

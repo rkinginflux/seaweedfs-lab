@@ -1,0 +1,11 @@
+# local build artefacts
+telegraf
+*.tar
+*.tgz
+# python
+__pycache__/
+*.pyc
+# editor / os
+.DS_Store
+.idea/
+.vscode/
