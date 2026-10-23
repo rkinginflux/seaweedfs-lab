@@ -117,6 +117,22 @@ from the cluster secret), then imports both dashboards.
 - **Per collection** — bytes, files, volumes, writable volumes, snapshot table
 - **Growth** — bytes added and files added per interval
 
+### Telegraf — All Measurements (48 panels)
+
+One dashboard over **every measurement** in the `telegraf` database (130 when it
+was built), generated from the live schema by
+`grafana/build_all_measurements_dashboard.py`:
+
+- **Summary row** — ingest lines/s, CPU busy, memory used, disk used, free volume
+  slots, Telegraf write errors (per node, with thresholds)
+- **Host / OS** and **SeaweedFS** open; **Telegraf**, **Kubernetes**, **InfluxDB 3
+  (ingest, WAL, query path, memory)**, **async semaphore**, **object store** and
+  **tokio** in collapsed rows, so Grafana does not query them until opened
+- measurements sharing a unit are merged into one panel (one target each), which
+  is why 130 measurements fit in 42 time-series panels
+- the generator asserts every measurement appears exactly once and refuses to
+  publish otherwise; `--verify` runs every panel query through the datasource
+
 ### Panel gotchas worth knowing
 
 - InfluxQL aggregate frames carry **no labels**, so series names arrive as
@@ -131,11 +147,40 @@ from the cluster secret), then imports both dashboards.
 - Growth panels spike right after a collector restart: `non_negative_difference`
   across the gap counts the whole catch-up in one bucket.
 
-## Alert ideas (not yet wired up)
+## Alerting
+
+Wired up in Grafana unified alerting by `grafana/create_slots_alert.py`:
+
+| Rule | Condition | For | Notification |
+| --- | --- | --- | --- |
+| SeaweedFS volume slots low | `max(free_volume_slots) < 5` | 5m | Telegram (`telegram-rick`) |
+
+Details:
+
+- The rule lives in the **SeaweedFS** folder, group `seaweedfs-capacity`, and
+  evaluates every minute. It queries `seaweedfs_cluster` directly (`GROUP BY
+  time(1m) fill(previous)` over a 15m window), so it does not depend on a
+  dashboard being open.
+- The annotation carries the live value (`{{ $values.B }}`) plus the fix —
+  raise `master.maxVolumes` (30 GB per volume, so ~330 GB of PVC headroom for 11
+  slots) and `helm upgrade seaweedfs --atomic --wait`.
+- The contact point reuses the Hermes Telegram bot (token read from
+  `~/.hermes/.env`, never committed); the default notification policy routes to
+  it with a 30s group wait and a 12h repeat interval.
+- Grafana 13.2.4 removed `/api/v1/provisioning/contact-points/test`, and its
+  replacement rejects telegram receivers with "unknown integration type", so
+  contact-point testing is done by letting the rule fire (or by checking the bot
+  credentials with `getMe`/`getChat`), not through that endpoint.
+- `"Request Origin is not authorized"` warnings in the Grafana log are the LAN
+  entry point (`http://192.168.0.21:3000`) not matching `server.app_url`
+  (`http://localhost:3000`); they affect live/websocket features only, set
+  `grafana.ini` `server.root_url` if it matters.
+
+### Alert ideas not yet wired up
 
 | Signal | Condition |
 | --- | --- |
-| `free_volume_slots` | < 5 warn, 0 critical |
+| `used_percent` on `seaweedfs_disk` | > 80 warn, > 90 critical |
 | `used_percent` on `seaweedfs_disk` | > 80 warn, > 90 critical |
 | `readonly_volume_count` | > 0 |
 | scraper staleness | `now() - max(time) > 60s` per host |
