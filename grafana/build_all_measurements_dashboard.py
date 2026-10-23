@@ -427,14 +427,17 @@ def build(schema, tags, fields):
                               'GROUP BY time($__interval)',
          "ops", [("green", None)], "Line-protocol lines written per second"),
         ("CPU busy", 'SELECT 100 - mean("usage_idle") AS "busy" FROM "cpu" '
-                     'WHERE $timeFilter AND "cpu" = \'cpu-total\' GROUP BY "host"',
+                     'WHERE $timeFilter AND "cpu" = \'cpu-total\' '
+                     'GROUP BY time($__interval), "host"',
          "percent", [("green", None), ("yellow", 70), ("red", 85)], "Busiest host, latest value"),
-        ("Memory used", 'SELECT mean("used_percent") AS "used" FROM "mem" WHERE $timeFilter GROUP BY "host"',
+        ("Memory used", 'SELECT mean("used_percent") AS "used" FROM "mem" '
+                        'WHERE $timeFilter GROUP BY time($__interval), "host"',
          "percent", [("green", None), ("yellow", 80), ("red", 92)], "Highest host memory usage"),
         ("Disk used", 'SELECT max("used_percent") AS "used" FROM "disk" WHERE $timeFilter '
-                      'AND "path" = \'/\' GROUP BY "host"',
+                      'AND "path" = \'/\' GROUP BY time($__interval), "host"',
          "percent", [("green", None), ("yellow", 80), ("red", 90)], "Root filesystem per node"),
-        ("SeaweedFS slots free", 'SELECT max("free_volume_slots") AS "free" FROM "seaweedfs_cluster" WHERE $timeFilter',
+        ("SeaweedFS slots free", 'SELECT max("free_volume_slots") AS "free" FROM "seaweedfs_cluster" '
+                                 'WHERE $timeFilter GROUP BY time($__interval)',
          "short", [("red", None), ("yellow", 1), ("green", 5)], "When this hits 0, S3 writes fail"),
         ("Telegraf write errors", 'SELECT non_negative_derivative(max("write_errors"), 1s) AS "errors" '
                                   'FROM "internal_agent" WHERE $timeFilter GROUP BY time($__interval)',
