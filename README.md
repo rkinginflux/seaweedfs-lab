@@ -136,10 +136,3 @@ The documents, Helm values and dashboards in this repository are MIT licensed
 [Telegraf](https://github.com/influxdata/telegraf) (MIT) and follows its plugin
 conventions; [SeaweedFS](https://github.com/seaweedfs/seaweedfs) is Apache-2.0.
 No code from either project is vendored here.
-
-### AI assistance
-
-Some of the code and text in this repository was written with the assistance of an
-AI coding agent, reviewed and validated against the live cluster (unit tests,
-`golangci-lint`, and end-to-end verification in InfluxDB 3 and Grafana). This is
-disclosed in the upstream pull request as well, per the InfluxData AI policy.
