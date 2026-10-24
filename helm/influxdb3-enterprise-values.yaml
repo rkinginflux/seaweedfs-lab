@@ -1,0 +1,102 @@
+# Helm values for InfluxDB 3 Enterprise 3.12 (chart `influxdata/influxdb3-enterprise`).
+#
+# Nothing secret lives here: the license, the admin token and the S3 credentials are
+# pre-created Secrets in the same namespace, referenced by name.
+#
+#   influxdb3-bootstrap-admin-token          key: admin-token.json
+#   db3-influxdb3-enterprise-license         key: license-file
+#   db3-influxdb3-enterprise-object-storage  keys: access-key-id, secret-access-key
+#   telegraf-influxdb3-token                 key: TOKEN      (lab only — scope it properly)
+#
+# Object storage is the SeaweedFS S3 gateway from helm/seaweedfs-values.yaml.
+#
+# Two flags look odd and are deliberate — see docs/rebuild-checklist.md:
+# the chart reads the product version from the image tag, and the custom tag below is
+# not semver, so the chart cannot verify the catalog format or the upgrade boundary and
+# fails closed on every upgrade. Unknown tags never record the marker, so these are
+# permanent rather than one-time.
+acknowledgeCatalogMigration: true
+acknowledgeUpgrade: "3.12"
+cluster:
+  id: idaho
+compactor:
+  enabled: true
+  # no nodeSelector: ingester and compactor keep all state in the object store, so the
+  # scheduler can place them anywhere and a rebuild needs no node labels
+  replicas: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+extraEnv:
+- name: INFLUXDB3_USE_PACHA_TREE
+  value: 'true'
+- name: INFLUXDB3_CLUSTER_ID
+  value: idaho
+image:
+  # any public registry path; this one is the stock enterprise image republished with
+  # the license-free tag used in the lab
+  pullPolicy: Always
+  registry: docker.io
+  repository: king0770/influxdb3
+  tag: portable-v2
+ingester:
+  enabled: true
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 8Gi
+    requests:
+      cpu: 500m
+      memory: 4Gi
+license:
+  type: commercial
+  existingSecret: db3-influxdb3-enterprise-license
+# Offline bootstrap JSON lives in a same-namespace Secret, never in Helm values.
+security:
+  auth:
+    adminToken:
+      existingSecret: influxdb3-bootstrap-admin-token
+objectStorage:
+  bucket: lab
+  s3:
+    allowHttp: true
+    endpoint: http://seaweedfs-s3.s3.svc.cluster.local:8333
+    region: us-west-1
+    existingSecret: db3-influxdb3-enterprise-object-storage
+  type: s3
+processingEngine:
+  enabled: true
+  # the plugins PVC is the only node-bound state in this deployment (local-path);
+  # if you need the processor to stay put, pin it here deliberately
+  nodeSelector: {}
+  packageManager: discover
+  persistence:
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    storageClass: local-path
+  pluginDir: /plugins
+  pluginRepo: https://raw.githubusercontent.com/influxdata/influxdb3_plugins/main/
+  replicas: 1
+  resources:
+    limits:
+      cpu: 4000m
+      memory: 4Gi
+    requests:
+      cpu: 2000m
+      memory: 2Gi
+querier:
+  enabled: true
+  nodeSelector: {}
+  replicas: 1
+  resources:
+    limits:
+      cpu: '1'
+      memory: 8Gi
+    requests:
+      cpu: '1'
+      memory: 3Gi

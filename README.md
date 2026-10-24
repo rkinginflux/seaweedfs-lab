@@ -61,10 +61,11 @@ those numbers actually live.
 ## Repository layout
 
 ```
-helm/                 Helm values, the Makefile that pins chart versions and checks
-                      drift, and the db3 processor patch script
+helm/                 Helm values for all four releases, the Makefile that pins
+                      chart versions and checks drift, and the db3 processor patch
 telegraf-plugin/      the inputs.seaweedfs plugin (source, tests, fixtures, docs)
 grafana/              dashboard JSON exports + the import script
+docs/rebuild-checklist.md  the verified end-to-end order for an empty cluster
 docs/architecture.md  topology, sizing, persistence model, failure domains
 docs/deployment.md    build the image, install SeaweedFS, roll out Telegraf
 docs/monitoring.md    metrics, dashboards, the Grafana/InfluxDB 3 gotchas
@@ -81,7 +82,14 @@ docs/storage-growth-and-retention.md
    `helm install seaweedfs seaweedfs/seaweedfs -n s3 -f helm/seaweedfs-values.yaml`.
 2. **Telegraf image** — build Telegraf with the plugin (`docs/deployment.md`),
    push it somewhere your cluster can pull from.
-3. **Telegraf** — `helm install telegraf-ds influxdata/telegraf-ds -n influxdb3 -f helm/telegraf-values.yaml`.
+3. **InfluxDB 3** — create the four Secrets it references, then
+   `helm install db3 influxdata/influxdb3-enterprise -n influxdb3 -f helm/influxdb3-enterprise-values.yaml`;
+   create the `telegraf` database with retention before Telegraf starts.
+4. **Telegraf** — `helm install telegraf-ds influxdata/telegraf-ds -n influxdb3 -f helm/telegraf-values.yaml`.
+
+`docs/rebuild-checklist.md` is the full ordered version of the above, including the
+steps that bite (pinned chart versions, the database nobody creates, the Grafana
+provisioning order).
 4. **Grafana** — create the InfluxQL datasource and import the dashboards, or run
    `grafana/build_dashboards.py` which does both (`docs/monitoring.md`).
    `grafana/build_all_measurements_dashboard.py` builds the wider Telegraf

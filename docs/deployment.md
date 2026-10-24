@@ -2,6 +2,9 @@
 
 Order matters: secrets → SeaweedFS → Telegraf image → Telegraf → Grafana.
 
+> For the whole sequence in order, including the steps that are easy to miss, see
+> [rebuild-checklist.md](rebuild-checklist.md). This document goes deeper on the
+> pieces, especially the Telegraf image build.
 ## 0. Prerequisites
 
 ```shell
