@@ -96,6 +96,14 @@ One replica each of ingester, compactor, processor and querier. Only the process
 plugins PVC is node-bound (`local-path`); the ingester and compactor keep everything in
 the object store, which is why no component needs a node label.
 
+Two values in that file look odd and are not: `acknowledgeCatalogMigration: true` and
+`acknowledgeUpgrade: "3.12"`. The chart derives the product version from the image tag,
+the tag here is the custom `portable-v2`, and a non-semver tag makes the chart fail closed
+on both the catalog-format check and the 3.12 upgrade boundary. Unknown tags never record
+the marker ("even when acknowledged"), so these stay in the file permanently rather than
+being one-time flags. Every db3 upgrade also needs `--force-conflicts`, because the
+processor args belong to `kubectl-edit` after the patch in 2.1.
+
 If pods were created before the license Secret existed they can retain a directory at
 `/etc/influxdb/license` and fail with `Is a directory`; restoring the Secret alone does
 not repair them — recreate those pods.
@@ -174,6 +182,10 @@ helm upgrade --install telegraf-ds influxdata/telegraf-ds \
 `docs/deployment.md`; it must contain the `inputs.seaweedfs` plugin, and the values point
 the DaemonSet at it with `pullPolicy: IfNotPresent`, so the tag has to change on rebuild.
 
+The config sets `detailed_volumes: true`. That is what emits `seaweedfs_volume` (size,
+files, trash and read-only per volume) and it is the only reason the per-volume dashboard
+has data; without it that dashboard renders empty.
+
 ```shell
 kubectl -n influxdb3 rollout status daemonset/telegraf-ds --timeout=5m
 kubectl -n influxdb3 get pods -l app.kubernetes.io/name=telegraf-ds -o wide
@@ -248,6 +260,9 @@ kubectl -n influxdb3 exec db3-influxdb3-enterprise-querier-0 -- sh -c \
 
 # drift: does the values file still reproduce the cluster?
 make -C helm drift
+
+# docs: is the lab's own sequence still in step with this checklist?
+make -C helm docs
 ```
 
 A silent dashboard is almost always one of: the datasource missing its token, Telegraf on

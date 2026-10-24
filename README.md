@@ -62,7 +62,8 @@ those numbers actually live.
 
 ```
 helm/                 Helm values for all four releases, the Makefile that pins
-                      chart versions and checks drift, and the db3 processor patch
+                      chart versions and checks drift + doc parity, the db3
+                      processor patch, and small helpers (slots.py, drift.py)
 telegraf-plugin/      the inputs.seaweedfs plugin (source, tests, fixtures, docs)
 grafana/              dashboard JSON exports + the import script
 docs/rebuild-checklist.md  the verified end-to-end order for an empty cluster

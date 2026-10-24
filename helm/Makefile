@@ -11,6 +11,8 @@
 #   make rollback        roll back to the previous revision
 #   make values          show the values stored in the release
 #   make lint            render + helm lint, no cluster change
+#   make docs            is ~/lab/SEQUENCE-FOR-INSTALL.md still in step with
+#                        docs/rebuild-checklist.md?
 #
 # Override anything on the command line:
 #   make upgrade RELEASE=seaweedfs NAMESPACE=s3 CHART=seaweedfs/seaweedfs VERSION=4.48.0
@@ -55,6 +57,10 @@ volumes:
 drift:
 	@python3 ./drift.py --release $(RELEASE) --namespace $(NAMESPACE) \
 	  --chart $(CHART) --version $(VERSION) --values $(VALUES)
+
+docs:
+	@python3 ./check-doc-parity.py
+
 
 lint:
 	@$(HELM) template $(RELEASE) $(CHART) --version $(VERSION) -f $(VALUES) > /dev/null && \
