@@ -2,7 +2,8 @@
 
 A small, write-up of a SeaweedFS deployment I run in a home/lab Kubernetes
 cluster, together with the monitoring stack built around it: a Telegraf input
-plugin for SeaweedFS, an InfluxDB 3 bucket, and two Grafana dashboards.
+plugin for SeaweedFS, an InfluxDB 3 bucket, and three Grafana dashboards
+(plus one covering every measurement Telegraf writes).
 
 It is a lab, not a production reference. Everything below is what is actually
 deployed and what actually broke; the numbers in the screenshots are real.
@@ -22,7 +23,7 @@ deployed and what actually broke; the numbers in the screenshots are real.
 | SeaweedFS | 4.48 (chart 4.48.0) | `s3` | master, volume, filer + S3, admin, 2 maintenance workers |
 | InfluxDB 3 Enterprise | 3.12.1 | `influxdb3` | querier/ingester on `:8181`, bucket `telegraf` |
 | Telegraf | 1.40.7 + `inputs.seaweedfs` | `influxdb3` | 5-pod DaemonSet, one pod per node |
-| Grafana | 13.2.4 | `grafana` | InfluxQL datasource, two dashboards |
+| Grafana | 13.2.4 | `grafana` | InfluxQL datasource, three dashboards |
 
 ## How it fits together
 
@@ -47,7 +48,7 @@ deployed and what actually broke; the numbers in the screenshots are real.
                                 │  InfluxQL (HTTP /query)
                   ┌─────────────▼──────────────┐
                   │ Grafana 13                  │  folder: SeaweedFS
-                  │  2 dashboards, 31 panels    │
+                  │  3 dashboards, 38 panels    │
                   └────────────────────────────┘
 ```
 
@@ -79,6 +80,8 @@ docs/runbook.md       capacity, vacuum, recovery, day-2 operations
 3. **Telegraf** — `helm install telegraf-ds influxdata/telegraf-ds -n influxdb3 -f helm/telegraf-values.yaml`.
 4. **Grafana** — create the InfluxQL datasource and import the dashboards, or run
    `grafana/build_dashboards.py` which does both (`docs/monitoring.md`).
+   `grafana/build_all_measurements_dashboard.py` builds the wider Telegraf
+   dashboard, and `grafana/create_slots_alert.py` provisions the capacity alert.
 5. **Verify** — `seaweedfs_cluster`, `seaweedfs_disk` and `seaweedfs_collection`
    should appear in the bucket within one collection interval.
 
