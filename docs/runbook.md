@@ -128,6 +128,21 @@ Telegraf (discovery) — in that order.
 - **SeaweedFS**: **always pass `--version`**, and only to a version whose image is
   already in node containerd.
 
+  The repo's `helm/Makefile` exists to make that hard to get wrong:
+
+  ```shell
+  make -C helm drift      # is the cluster still what seaweedfs-values.yaml says?
+  make -C helm slots      # volume-slot headroom from the master's /dir/status
+  make -C helm upgrade    # pinned version, --atomic, --wait, then check `make drift`
+  make -C helm rollback   # previous revision
+  ```
+
+  `drift` compares the values stored in the release with the file, and the rendered
+  manifests with the deployed ones, normalising the two differences Helm always shows
+  (hook resources are not stored in `get manifest`; the chart hashes freshly generated
+  S3 credentials into a `checksum/` annotation). Anything else is a real drift — a
+  `kubectl edit` or a `--set` at upgrade time.
+
   ```shell
   helm upgrade seaweedfs seaweedfs/seaweedfs -n s3 \
     -f ~/lab/seaweedfs-values.yaml --version 4.48.0 --atomic --wait --timeout 4m

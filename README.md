@@ -61,7 +61,8 @@ those numbers actually live.
 ## Repository layout
 
 ```
-helm/                 Helm values for SeaweedFS and the Telegraf DaemonSet
+helm/                 Helm values, plus the Makefile that runs releases with a
+                      pinned chart version and a drift check
 telegraf-plugin/      the inputs.seaweedfs plugin (source, tests, fixtures, docs)
 grafana/              dashboard JSON exports + the import script
 docs/architecture.md  topology, sizing, persistence model, failure domains
