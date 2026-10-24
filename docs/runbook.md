@@ -148,9 +148,10 @@ Telegraf (discovery) — in that order.
     -f ~/lab/seaweedfs-values.yaml --version 4.48.0 --atomic --wait --timeout 4m
   ```
 
-  Without `--version` Helm pulls the newest chart, which referenced
-  `chrislusf/seaweedfs:4.49` — an image the nodes cannot pull (no registry access),
-  so all six pods went `ImagePullBackOff` and storage was down for eight minutes
+  Without `--version` Helm pulls the newest chart, which pins an image tag that was
+  never published — `chrislusf/seaweedfs:4.49` returns 404 from Docker Hub (the
+  registry itself is reachable; `chrislusf/seaweedfs:4.48` and a fresh `busybox:1.36`
+  both pull fine) — so all six pods went `ImagePullBackOff` and storage was down for eight minutes
   until `helm rollback seaweedfs <rev>` restored the previous revision. `--atomic`
   does not save you here: it only rolls back when *Helm* times out, and a stuck
   `pending-upgrade` blocks the next upgrade until it is resolved.

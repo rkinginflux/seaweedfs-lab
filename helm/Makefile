@@ -1,8 +1,8 @@
 # SeaweedFS release wrapper — every mutation goes through a pinned chart version.
 #
 # The chart version is pinned here for a reason: `helm upgrade` without `--version`
-# took 4.49.0, whose image the nodes cannot pull, and all six pods went
-# ImagePullBackOff. Values cannot express the chart version, so the pin lives here.
+# took 4.49.0, which pins an image tag that was never published (404), and all six
+# pods went ImagePullBackOff. Values cannot express the chart version, so the pin lives here.
 #
 #   make status          release state, pods, volume slots
 #   make drift           is the cluster still what seaweedfs-values.yaml says?

@@ -26,7 +26,7 @@ import urllib.request
 
 GRAFANA = os.environ.get("GRAFANA_URL", "http://127.0.0.1:3000")
 KUBECONFIG = os.environ.get("KUBECONFIG", os.path.expanduser("~/.kube/config"))
-DS_UID = os.environ.get("DS_UID", "bg24j3hn03cw0d")
+DS_UID = os.environ.get("DS_UID")  # resolved from Grafana unless overridden
 FOLDER_TITLE = "SeaweedFS"
 CP_NAME = "telegram-rick"
 RULE_TITLE = "SeaweedFS volume slots low"
@@ -69,6 +69,20 @@ def api(method: str, path: str, payload=None):
         return e.code, e.read().decode()[:500]
 
 
+def datasource_uid() -> str:
+    """The datasource uid is generated per install, so never hardcode it: look it up
+    by type + database (as build_dashboards.py does) so a rebuilt lab still works."""
+    if DS_UID:
+        return DS_UID
+    code, dss = api("GET", "/api/datasources")
+    if code != 200:
+        sys.exit(f"cannot list datasources: {code} {dss}")
+    for ds in dss or []:
+        if ds["type"] == "influxdb" and (ds.get("jsonData") or {}).get("dbName") == "telegraf":
+            return ds["uid"]
+    sys.exit("no InfluxDB datasource for the telegraf database found in Grafana")
+
+
 def folder_uid() -> str:
     code, folders = api("GET", "/api/folders")
     for f in folders or []:
@@ -92,8 +106,10 @@ def ensure_contact_point(token: str, chat_id: str) -> str:
             code, res = api("PUT", f"/api/v1/provisioning/contact-points/{c['uid']}", cp)
             if code not in (200, 202):
                 sys.exit(f"cannot update contact point: {code} {res}")
-            print(f"contact point          : updated {CP_NAME} ({res.get('uid')})")
-            return res["uid"]
+            # the provisioning PUT returns the object without a uid; the existing
+            # one is authoritative and stable
+            print(f"contact point          : updated {CP_NAME} ({c['uid']})")
+            return c["uid"]
     code, res = api("POST", "/api/v1/provisioning/contact-points", cp)
     if code not in (200, 201, 202):
         sys.exit(f"cannot create contact point: {code} {res}")
@@ -250,6 +266,9 @@ def main():
     ap.add_argument("--test-contact-point", action="store_true")
     args = ap.parse_args()
 
+    global DS_UID
+    DS_UID = datasource_uid()
+    print(f"datasource             : {DS_UID}")
     token, chat_id = hermes_telegram()
     print(f"telegram target        : chat {chat_id[:4]}… token {len(token)} chars (from ~/.hermes/.env)")
     folder = folder_uid()

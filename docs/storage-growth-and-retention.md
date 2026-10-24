@@ -81,7 +81,7 @@ Disk was never the constraint: `/dev/sda2` was 21 % used with 343 GB free throug
 | 23:23 | 42 volumes, 4 free slots, disk 18 % used |
 | 23:30 | `SeaweedFS volume slots low` alert fires (4 < 5) |
 | 23:54 | slots hit 0 → filer 500 on PUT → ingester cannot persist WAL → Telegraf writes time out and the buffer overflows (1,336 metrics dropped) |
-| 00:31–00:39 | an upgrade attempt without a pinned chart version pulled chart 4.49.0, whose image cannot be pulled by the nodes, so all six SeaweedFS pods went `ImagePullBackOff`; rolled back |
+| 00:31–00:39 | an upgrade attempt without a pinned chart version pulled chart 4.49.0, which pins `chrislusf/seaweedfs:4.49` — a tag that was never published to Docker Hub (404) — so all six SeaweedFS pods went `ImagePullBackOff`; rolled back |
 | 00:40 | `maxVolumes` 46 → 220 applied with `--version 4.48.0`; master grew volumes, `lab` had 7 writables, ingestion resumed within the minute (newest sample 00:41:20) |
 | ~03:00 | 8 h retention set on the `telegraf` database |
 
