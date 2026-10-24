@@ -78,7 +78,11 @@ docs/storage-growth-and-retention.md
 
 ## Quick start
 
-1. **SeaweedFS** — create the three secrets listed at the top of
+1. **SeaweedFS** — first follow the storage preflight in
+   `docs/rebuild-checklist.md`: the values use getup's `/misc` disk plus the
+   existing data1 PVC, with 1720 total volume slots and no pod `nodeSelector`.
+   The `/misc` boot mount still needs host configuration; a startup guard is
+   present, not automatic remounting. Create the three secrets listed at the top of
    `helm/seaweedfs-values.yaml`, then
    `helm install seaweedfs seaweedfs/seaweedfs -n s3 -f helm/seaweedfs-values.yaml`.
 2. **Telegraf image** — build Telegraf with the plugin (`docs/deployment.md`),

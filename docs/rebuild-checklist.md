@@ -4,7 +4,9 @@ The end-to-end order for standing this lab up from an empty cluster, as actually
 `docs/deployment.md` covers the pieces in more depth (especially building the Telegraf
 image); this document is the sequence, with the traps that cost time called out inline.
 
-Verified against a running lab on 2026-10-24. Every command below was executed.
+Verified against a running lab on 2026-10-24. The original install sequence was
+executed; the /misc preflight below documents an additional requirement and
+unresolved boot-mount persistence, not a tested empty-cluster rebuild.
 
 Replace the namespace-specific details with your own: the examples use the lab's layout
 (`s3`, `influxdb3`, `grafana`, node `eruption`, LAN `192.168.0.21`).
@@ -30,6 +32,22 @@ No node labels are required. InfluxDB 3 only selects nodes by label when values 
 and these values deliberately set no `nodeSelector`.
 
 ## 1. SeaweedFS (namespace `s3`)
+
+The values now include getup's dedicated `/misc` disk as a hostPath, in addition
+to the existing data1 PVC. Before installing or upgrading:
+
+- Verify the correct filesystem is mounted at `/misc` on getup. The chart uses
+  `/misc/object_store/` on the host and `/misc/` in the container.
+- Make the mount persistent before relying on reboot recovery. At the last
+  verification `/etc/fstab` had no entry; this remains a host-administration task.
+- Verify the data1 PV's required node affinity selects getup. There is no pod
+  `nodeSelector`; a fresh dynamically provisioned PVC is not guaranteed to land
+  on getup. Arrange the correct local PV binding before starting the volume pod.
+- Keep the startup guard: it requires misc and root-backed data1 to have distinct
+  device IDs. It is not a replacement for correct PV binding or mount persistence.
+
+See [the /misc runbook](runbook.md#additional-misc-disk-on-getup) for checks and
+the observed revision-7 rollout. Do not delete existing PVCs for a rebuild.
 
 ```shell
 kubectl create namespace s3 --dry-run=client -o yaml | kubectl apply -f -
@@ -62,7 +80,8 @@ because this is the failure that hits first and diagnoses worst:
 kubectl -n s3 exec seaweedfs-master-0 -- wget -qO- http://127.0.0.1:9333/dir/status
 ```
 
-`Max` minus volumes in use is the free-slot count. The values file sets
+Expect `Max: 1720` (220 data1 + 1500 misc). `Max` minus volumes in use is the
+free-slot count. The pinned chart defaults the master to
 `volumeSizeLimitMB: 1000`, so a slot is **1 GB** — `maxVolumes` is a GB ceiling, not a
 count of 30 GB volumes. At zero free slots the master cannot grow a volume, S3 PUTs
 return 500, the ingester stalls, and telemetry stops with no error in Grafana. That

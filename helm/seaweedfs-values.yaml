@@ -1,8 +1,8 @@
 # Helm values for SeaweedFS 4.48 (chart `seaweedfs/seaweedfs`).
 #
-# Everything except the volume data lives on `local-path` PVCs; the volume server
-# keeps its data on a local-path PVC too, which means the data is node-local and
-# NOT highly available. See docs/architecture.md for why that matters.
+# Persistence is node-local: the volume server keeps its existing data1 PVC plus
+# getup's /misc/object_store hostPath. This is NOT highly available.
+# See docs/architecture.md and the /misc boot-mount warning in docs/runbook.md.
 #
 # Pre-create these secrets in the target namespace (no credentials in this repo):
 #   seaweedfs-admin-secret        keys: adminUser, adminPassword
@@ -42,15 +42,18 @@ filer:
   tolerations: "- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"seaweedfs\"\n  effect: \"NoSchedule\"\n"
 
 volume:
-  # One volume server, 220 volume slots, 50Gi claim. The claim is NOT a filesystem
-  # quota: SeaweedFS stops writing when maxVolumes is reached, not at the PVC size.
+  # One volume server, two data directories, 1720 volume slots in total.
+  # The data1 50Gi claim is NOT a filesystem quota. Both slot and disk limits apply.
   #
   # Size the slots against the VOLUME size, not the disk. This chart sets
   # volumeSizeLimitMB: 1000, so each slot is 1 GB even though the weed version
   # string advertises 30 GB. Two outages came from getting this wrong:
   #   35/35 slots  -> S3 PUTs 500, ingester stalled
   #   46/46 slots  -> same failure again, three hours later, at ~8 GB/h growth
-  # 220 slots = a 220 GB ceiling, which fits the ~343 GB free on the volume node.
+  # data1 retains 220 slots; /misc adds 1500 with disk headroom on the 1.8 TiB disk.
+  # No nodeSelector: the existing data1 PV's node affinity already selects getup.
+  # On a fresh cluster, ensure the data1 PV is bound to the node holding /misc;
+  # this values file alone does not guarantee correct first-time placement.
   #
   # If slot churn becomes a problem again, raise volumeSizeLimitMB rather than
   # maxVolumes: 4000 MB volumes would burn a quarter of the ids for the same data.
@@ -62,6 +65,34 @@ volume:
       storageClass: local-path
       size: 50Gi
       maxVolumes: 220
+    - name: misc
+      type: hostPath
+      hostPathPrefix: /misc
+      maxVolumes: 1500
+  # The chart appends /object_store/ to hostPathPrefix and mounts it at /misc.
+  # Fail closed if /misc is on the root-backed data1 filesystem after a reboot.
+  # This guard depends on data1 remaining root-backed; it does not mount the disk.
+  initContainers: |
+    - name: verify-misc-disk
+      image: chrislusf/seaweedfs:4.48
+      command:
+        - /bin/sh
+        - -ec
+        - |
+          data_device=$(stat -c %d /data1)
+          misc_device=$(stat -c %d /misc)
+          if [ "$data_device" = "$misc_device" ]; then
+            echo 'ERROR: /misc is not a separate disk; refusing to start' >&2
+            exit 1
+          fi
+          df -k /misc
+      volumeMounts:
+        - name: data1
+          mountPath: /data1
+          readOnly: true
+        - name: misc
+          mountPath: /misc
+          readOnly: true
   tolerations: "- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"seaweedfs\"\n  effect: \"NoSchedule\"\n"
 
 admin:

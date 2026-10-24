@@ -8,7 +8,7 @@ cluster and the namespaces from `docs/deployment.md`.
 Two limits, check both:
 
 ```shell
-kubectl -n s3 exec deploy/seaweedfs-filer -- \
+kubectl -n s3 exec seaweedfs-filer-0 -- \
   wget -qO- http://seaweedfs-master.s3.svc.cluster.local:9333/dir/status
 ```
 
@@ -24,7 +24,8 @@ kubectl -n s3 exec deploy/seaweedfs-filer -- \
   `-volumeSizeLimitMB=1000`, so each slot is 1 GB, not the 30 GB the binary's
   version string advertises. 46 slots was therefore only a ~46 GB ceiling, and the
   `lab` collection grew 19.5 GB in 2h20m (~8.4 GB/h), so it filled in three hours.
-  The limit is now 220 (≈220 GB, against 343 GB free on `/dev/sda2`).
+  data1 now has 220 slots and getup's `/misc` disk adds 1500, for 1720 total.
+  Slot capacity is not reserved disk space; monitor both filesystems.
 
   Watch it from the metrics instead of the API: `/dir/status` → `Free` is exported
   as `free_volume_slots` in `seaweedfs_cluster`, and the `SeaweedFS volume slots
@@ -33,16 +34,60 @@ kubectl -n s3 exec deploy/seaweedfs-filer -- \
 
 To add capacity:
 
-1. more `dataDirs` on the volume server (new PVC + `maxVolumes`), or
+1. more `dataDirs` on the volume server (PVC or hostPath + `maxVolumes`), or
 2. another volume server replica (`volume.replicas`, separate `dataDirs`), or
-3. larger volumes (`-volumeSizeLimitMB` on the volume server; the default 30 GB
-   chunk size is what makes slot exhaustion outrun disk exhaustion).
+3. larger volumes (`-volumeSizeLimitMB` on the master; the current 1000 MB
+   limit makes slot exhaustion outrun disk exhaustion).
 
 Adding replicas also changes the topology tags in `seaweedfs_volume_server`, so
 dashboards need no change: they group by `server`.
 
 The full measurement of the two slot-exhaustion incidents, the growth rate and the
 8 h retention policy is in [storage-growth-and-retention.md](storage-growth-and-retention.md).
+
+## Additional /misc disk on getup
+
+The deployed values preserve the existing data1 PVC (220 slots) and add
+`type: hostPath`, `hostPathPrefix: /misc`, `maxVolumes: 1500`. Chart 4.48.0
+appends `/object_store/` to that prefix: host `/misc/object_store/` is mounted
+at container `/misc/`.
+
+No `nodeSelector` is configured. The existing data1 PV has required node affinity
+for getup; verify this before a rebuild or any PVC replacement. Do not delete the
+PVC to fix scheduling, and do not assume the hostPath follows the pod.
+
+**Before rebooting getup:** `/misc` is mounted now, but boot persistence has not
+been configured in `/etc/fstab`. Have the host administrator add and validate an
+appropriate persistent mount by filesystem UUID. Do not format the disk or
+replace its contents. That host change was not part of the SeaweedFS rollout.
+
+The `verify-misc-disk` init container refuses startup when misc and root-backed
+data1 have the same filesystem device ID. It does not mount the disk, validate
+its UUID, or make storage highly available. If it fails after reboot, restore
+the correct host mount before restarting; do not bypass the guard.
+
+Read-only checks (with the correct kubeconfig):
+
+```shell
+# On getup: confirm a separate filesystem, not just an existing directory.
+findmnt /misc
+df -h /misc
+
+kubectl -n s3 get pod seaweedfs-volume-0 -o wide
+kubectl -n s3 get pvc data1-seaweedfs-volume-0
+# Inspect the bound PV's spec.nodeAffinity using its name from the PVC.
+kubectl -n s3 logs seaweedfs-volume-0 -c verify-misc-disk
+kubectl -n s3 exec seaweedfs-volume-0 -c seaweedfs -- \
+  wget -qO- http://127.0.0.1:8080/status
+kubectl -n s3 exec seaweedfs-master-0 -- \
+  wget -qO- http://127.0.0.1:9333/dir/status
+```
+
+After revision 7, the pod was Ready on getup, `/status` listed both `/data1` and
+`/misc`, and the master reported `Max: 1720`. A temporary write/read/delete on
+the new disk passed. These were storage/configuration checks, not an authenticated
+S3 end-to-end test. Workers run `volume_balance`, so existing volumes may move
+onto the new disk; it is not safe to treat it as empty after deployment.
 
 ## Vacuum
 
@@ -87,8 +132,8 @@ What actually fixed it, in order:
 5. Only then restart the dependent workloads, and afterwards run a `weed` fsck /
    audit for dangling metadata.
 
-Durable prevention: pin the volume server to a node whose disk holds the data
-(`nodeSelector` or a PV with node affinity), keep volume data on a dedicated
+Durable prevention: use a PV with node affinity for the node holding the data
+(this deployment deliberately has no pod `nodeSelector`), keep volume data on a dedicated
 volume, and back it up. A single-replica volume server on node-local storage is a
 single-node failure domain — this lab now has snapshots of each node's volume
 directory for exactly this reason.
