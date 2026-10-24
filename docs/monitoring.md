@@ -133,21 +133,32 @@ five Telegraf scrapers merged (`max()` per volume):
 - **Volume fill over time** — fullest and average volume size against the limit
 - **Files per volume** — file-count growth, which is what drives slot churn
 
-### Telegraf — All Measurements (48 panels)
+### Telegraf — All Measurements (31 panels, 207 measurements)
 
-One dashboard over **every measurement** in the `telegraf` database (130 when it
-was built), generated from the live schema by
-`grafana/build_all_measurements_dashboard.py`:
+One dashboard over **every measurement** in the `telegraf` database, generated from the
+live schema by `grafana/build_all_measurements_dashboard.py` (JSON export alongside it as
+`grafana/telegraf-all-measurements.json`):
 
 - **Summary row** — ingest lines/s, CPU busy, memory used, disk used, free volume
   slots, Telegraf write errors (per node, with thresholds)
-- **Host / OS** and **SeaweedFS** open; **Telegraf**, **Kubernetes**, **InfluxDB 3
-  (ingest, WAL, query path, memory)**, **async semaphore**, **object store** and
-  **tokio** in collapsed rows, so Grafana does not query them until opened
-- measurements sharing a unit are merged into one panel (one target each), which
-  is why 130 measurements fit in 42 time-series panels
-- the generator asserts every measurement appears exactly once and refuses to
-  publish otherwise; `--verify` runs every panel query through the datasource
+- **Host / OS** — network throughput, rates, then **CPU, memory and disk utilisation as
+  separate panels** (they answer different questions; one merged panel buried them), and
+  counts
+- **SeaweedFS** open; **Telegraf**, **Kubernetes**, **InfluxDB 3 (ingest, WAL, query
+  path, memory)**, **async semaphore**, **object store** and **tokio** in collapsed rows,
+  so Grafana does not query them until opened
+- **InfluxDB 3 — Compaction (Pacha Tree)** — compaction lag, uncompacted snapshots (the
+  real cost: each pins gen0 files into every query scan), compactor primary (lease), and
+  deferred snapshots. Reads the compactor's `/metrics`, which the Telegraf prometheus
+  input only scrapes because a second target was added.
+- measurements sharing a unit are merged into one panel (one target each); the generator
+  asserts every measurement appears exactly once and refuses to publish otherwise, and
+  `--verify` runs every panel query through the datasource
+
+Two small families are deliberately *not* auto-charted, with the reason in the script:
+`swap` (unused on these nodes) and `seaweedfs_volume` (one series per volume — it belongs
+on the Volumes dashboard), plus the ~70 `influxdb3_compactor_*` metrics, which the five
+curated compaction panels above replace.
 
 ### Panel gotchas worth knowing
 

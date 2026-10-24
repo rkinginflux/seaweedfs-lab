@@ -1,0 +1,5574 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": 1581325471768576,
+  "panels": [
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Line-protocol lines written per second",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "green",
+              "value": null
+            }
+          ],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"lines\" FROM \"influxdb3_write_lines_total\" WHERE $timeFilter GROUP BY time($__interval)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "InfluxDB 3 ingest",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Busiest host, latest value",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "yellow",
+              "value": 70
+            },
+            {
+              "color": "red",
+              "value": 85
+            }
+          ],
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT 100 - mean(\"usage_idle\") AS \"busy\" FROM \"cpu\" WHERE $timeFilter AND \"cpu\" = 'cpu-total' GROUP BY time($__interval), \"host\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "CPU busy",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Highest host memory usage",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "yellow",
+              "value": 80
+            },
+            {
+              "color": "red",
+              "value": 92
+            }
+          ],
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT mean(\"used_percent\") AS \"used\" FROM \"mem\" WHERE $timeFilter GROUP BY time($__interval), \"host\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Memory used",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Root filesystem per node",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "yellow",
+              "value": 80
+            },
+            {
+              "color": "red",
+              "value": 90
+            }
+          ],
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"used_percent\") AS \"used\" FROM \"disk\" WHERE $timeFilter AND \"path\" = '/' GROUP BY time($__interval), \"host\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Disk used",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "When this hits 0, S3 writes fail",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "red",
+              "value": null
+            },
+            {
+              "color": "yellow",
+              "value": 1
+            },
+            {
+              "color": "green",
+              "value": 5
+            }
+          ],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 5
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"free_volume_slots\") AS \"free\" FROM \"seaweedfs_cluster\" WHERE $timeFilter GROUP BY time($__interval)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "SeaweedFS slots free",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Output write error rate",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "red",
+              "value": 0.0001
+            }
+          ],
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 5
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT non_negative_derivative(max(\"write_errors\"), 1s) AS \"errors\" FROM \"internal_agent\" WHERE $timeFilter GROUP BY time($__interval)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Telegraf write errors",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "description": "Telegraf's host inputs: cpu, mem, swap, disk, diskio, net, kernel, processes and system.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 7,
+      "panels": [],
+      "title": "Host / OS",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "CPU busy = 100 \u2212 usage_idle on cpu-total, per host.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 10
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT 100 - mean(\"usage_idle\") AS \"busy\" FROM \"cpu\" WHERE $timeFilter AND \"cpu\" = 'cpu-total' GROUP BY time($__interval), \"host\" fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Host / OS \u2014 CPU utilisation",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "processes: running, blocked, zombie and total counts. system: load1/5/15 and uptime.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 8,
+        "y": 10
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT mean(\"running\") AS \"running\", mean(\"blocked\") AS \"blocked\", mean(\"zombies\") AS \"zombies\", mean(\"total\") AS \"total\" FROM \"processes\" WHERE $timeFilter GROUP BY time($__interval), \"host\" fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT mean(\"load1\") AS \"load1\", mean(\"load5\") AS \"load5\", mean(\"load15\") AS \"load15\", mean(\"uptime\") AS \"uptime\" FROM \"system\" WHERE $timeFilter GROUP BY time($__interval), \"host\" fill(null)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Host / OS \u2014 counts",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Disk space and inode used_percent per host and mount.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 20,
+        "y": 10
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"used_percent\") AS \"used\", max(\"inodes_used_percent\") AS \"inodes\" FROM \"disk\" WHERE $timeFilter GROUP BY time($__interval), \"host\", \"path\" fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Host / OS \u2014 disk utilisation",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Memory used_percent per host.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 17
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT mean(\"used_percent\") AS \"used\" FROM \"mem\" WHERE $timeFilter GROUP BY time($__interval), \"host\" fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Host / OS \u2014 memory utilisation",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "net: rx/tx in bits/s, summed across interfaces (bytes_recv/bytes_sent \u00d7 8 as a non-negative rate).",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 8,
+        "y": 17
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT non_negative_derivative(max(\"bytes_recv\"), 1s) * 8 AS \"rx\", non_negative_derivative(max(\"bytes_sent\"), 1s) * 8 AS \"tx\" FROM \"net\" WHERE $timeFilter GROUP BY time($__interval), \"host\" fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Host / OS \u2014 network throughput",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "diskio: read and write IOPS summed across devices. kernel: context switches, interrupts and forks per second.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 20,
+        "y": 17
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT non_negative_derivative(max(\"reads\"), 1s) AS \"reads\", non_negative_derivative(max(\"writes\"), 1s) AS \"writes\" FROM \"diskio\" WHERE $timeFilter GROUP BY time($__interval), \"host\" fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT non_negative_derivative(max(\"context_switches\"), 1s) AS \"ctx_switches\", non_negative_derivative(max(\"interrupts\"), 1s) AS \"interrupts\", non_negative_derivative(max(\"processes_forked\"), 1s) AS \"forks\" FROM \"kernel\" WHERE $timeFilter GROUP BY time($__interval), \"host\" fill(null)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Host / OS \u2014 rates",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "description": "SeaweedFS input from this repo's plugin: cluster, disk, collection, volume and volume-server measurements.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 14,
+      "panels": [],
+      "title": "SeaweedFS",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "seaweedfs_cluster: volumes, total slots, free slots and server count. seaweedfs_master: highest volume ID assigned. seaweedfs_volume_server: per-server volumes and free slots.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 31
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"volume_count\") AS \"volumes\", max(\"max_volume_slots\") AS \"slots\", max(\"free_volume_slots\") AS \"free_slots\", max(\"volume_server_count\") AS \"servers\" FROM \"seaweedfs_cluster\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"max_volume_id\") AS \"max_volume_id\" FROM \"seaweedfs_master\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"volume_count\") AS \"volumes\", max(\"free_volume_slots\") AS \"free_slots\" FROM \"seaweedfs_volume_server\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "refId": "C",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "SeaweedFS \u2014 counts",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "seaweedfs_collection: size_bytes and file_count per collection. seaweedfs_disk: used_percent and free_bytes per volume-server data path.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 31
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"size_bytes\") AS \"size\", max(\"file_count\") AS \"files\" FROM \"seaweedfs_collection\" WHERE $timeFilter GROUP BY time($__interval), \"collection\" fill(null)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"used_percent\") AS \"used %\", max(\"free_bytes\") AS \"free\" FROM \"seaweedfs_disk\" WHERE $timeFilter GROUP BY time($__interval), \"path\" fill(null)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "SeaweedFS \u2014 memory & storage",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "description": "Telegraf internal_* inputs \u2014 the agent's own health: throughput, heap, gather time and buffer pressure.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 45
+      },
+      "id": 17,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "internal_memstats: heap in use, heap reserved from the OS, and cumulative allocations.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 45
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"heap_in_use_bytes\") AS \"heap_in_use\", mean(\"heap_sys_bytes\") AS \"heap_sys\", mean(\"alloc_bytes\") AS \"alloc\" FROM \"internal_memstats\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Telegraf \u2014 memory & storage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "internal_agent: metrics gathered, written and dropped, plus write errors per second. internal_gather: gather duration per input. internal_process: agent CPU and RSS. internal_prometheus: scrape connection state (1 = connected). internal_statsd: pending StatsD messages.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 45
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"metrics_gathered\"), 1s) AS \"gathered\", non_negative_derivative(max(\"metrics_written\"), 1s) AS \"written\", non_negative_derivative(max(\"metrics_dropped\"), 1s) AS \"dropped\", non_negative_derivative(max(\"write_errors\"), 1s) AS \"write_errors\" FROM \"internal_agent\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gather_time_ns\") AS \"gather_ns\" FROM \"internal_gather\" WHERE $timeFilter GROUP BY time($__interval), \"input\" fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"cpu\") AS \"cpu\", mean(\"resident_memory\") AS \"rss\" FROM \"internal_process\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT max(\"connection_status\") AS \"connected\" FROM \"internal_prometheus\" WHERE $timeFilter GROUP BY time($__interval), \"input\" fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT max(\"pending_messages\") AS \"pending\" FROM \"internal_statsd\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Telegraf \u2014 rates",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "internal_write: output buffer fill (buffer_size / buffer_limit as %) and the metrics-written rate. Buffer % pinned near 100 means the output cannot keep up.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 70
+                  },
+                  {
+                    "color": "red",
+                    "value": 85
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 52
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT 100 * max(\"buffer_size\") / max(\"buffer_limit\") AS \"buffer %\", non_negative_derivative(max(\"metrics_written\"), 1s) AS \"written\" FROM \"internal_write\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Telegraf \u2014 utilisation",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Telegraf",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "kubernetes_* measurements from Telegraf's kube_inventory input.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 18,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "kubernetes_endpoint: endpoints per namespace. kubernetes_node: ready (1 = Ready). kubernetes_persistentvolume: PVs by phase. kubernetes_pod_container: containers per namespace. kubernetes_service: services per namespace.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 46
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT count(\"ready\") AS \"endpoints\" FROM \"kubernetes_endpoint\" WHERE $timeFilter GROUP BY time($__interval), \"namespace\" fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT max(\"ready\") AS \"ready\" FROM \"kubernetes_node\" WHERE $timeFilter GROUP BY time($__interval), \"node_name\" fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT count(\"phase_type\") AS \"volumes\" FROM \"kubernetes_persistentvolume\" WHERE $timeFilter GROUP BY time($__interval), \"phase\" fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT sum(\"phase_type\") AS \"containers\" FROM \"kubernetes_pod_container\" WHERE $timeFilter GROUP BY time($__interval), \"namespace\" fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT count(\"ready\") AS \"services\" FROM \"kubernetes_service\" WHERE $timeFilter GROUP BY time($__interval), \"namespace\" fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Kubernetes",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Kubernetes",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "Counters and gauges from the ingest and write path of InfluxDB 3 Enterprise.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "id": 19,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Gauges and counters from the ingest/write path: file-cache entries, rows and tables buffered before snapshot and WAL flush, in-flight write concurrency, node identity lease term, and the line write rate. Buffered rows climbing while writes continue means the snapshot or WAL flush cannot keep up.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 47
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_file_cache_entries_count\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_file_cache_requests_count\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_ingest_pre_snapshot_buffer_rows\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_ingest_pre_snapshot_buffer_tables\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_ingest_pre_wal_flush_buffer_rows\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_ingest_pre_wal_flush_buffer_tables\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 ingest & writes \u2014 counts (1)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Gauges and counters from the ingest/write path: file-cache entries, rows and tables buffered before snapshot and WAL flush, in-flight write concurrency, node identity lease term, and the line write rate. Buffered rows climbing while writes continue means the snapshot or WAL flush cannot keep up.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 47
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_ingest_write_concurrency\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_node_identity_lease_term\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_write_lines_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 ingest & writes \u2014 counts (2)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "lease_clock_offset_seconds: measured clock offset used by the identity lease. Large or oscillating values cause lease churn.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 54
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb3_file_cache_fetch_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_lease_clock_offset_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 ingest & writes \u2014 durations",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "influxdb3_file_cache_fetched_bytes_total: file-cache fetch rate. file_cache_size_bytes: cache size. ingest_lp_bytes_received_total: line-protocol bytes received per second \u2014 the true inbound rate. ingest_pre_snapshot_buffer_bytes and ingest_pre_wal_flush_buffer_bytes: bytes buffered before snapshot and WAL flush. write_bytes_total: bytes written per second.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 54
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_file_cache_fetched_bytes_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_file_cache_size_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_ingest_lp_bytes_received_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_ingest_pre_snapshot_buffer_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_ingest_pre_wal_flush_buffer_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_write_bytes_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 ingest & writes \u2014 memory & storage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "file_cache_access_total: cache accesses per second. ingest_writes_total: ingest write operations per second. node_identity_lease_renewal_failures_total and ..._renewals_after_window_closed_total: catalog lease renewal failures \u2014 anything non-zero means nodes are losing their lease.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 61
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_file_cache_access_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_ingest_write_errors_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_ingest_writes_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_node_identity_lease_renewal_failures_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_node_identity_lease_renewals_after_window_closed_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 ingest & writes \u2014 rates",
+          "type": "timeseries"
+        }
+      ],
+      "title": "InfluxDB 3 \u2014 ingest & writes",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "WAL flush and snapshot creation on the ingest nodes.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 20,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Per-second snapshot and WAL flushing volume: files and rows written, rows by window age, average windows per snapshot, windows seen in the last 24 h, WAL flush concurrency, and rows/tables flushed out of the WAL.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 48
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_snapshot_files_written_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_snapshot_rows_by_window_age_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_snapshot_rows_written_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb3_snapshot_windows\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_snapshot_windows_seen_24h\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb3_wal_flush_concurrency\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 WAL & snapshots \u2014 counts (1)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Per-second snapshot and WAL flushing volume: files and rows written, rows by window age, average windows per snapshot, windows seen in the last 24 h, WAL flush concurrency, and rows/tables flushed out of the WAL.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 48
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_wal_rows_flushed_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_wal_tables_flushed_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 WAL & snapshots \u2014 counts (2)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average snapshot construction time and average WAL flush latency (derivative of sum \u00f7 derivative of count).",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 55
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb3_snapshot_construction_seconds_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb3_wal_flush_latency_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 WAL & snapshots \u2014 durations",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "snapshot_bytes_written_total: bytes per second written into snapshot files. wal_bytes_flushed_total: bytes per second flushed out of the WAL.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 55
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_snapshot_bytes_written_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_wal_bytes_flushed_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 WAL & snapshots \u2014 memory & storage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "snapshot_total: snapshots created per second. wal_flush_total: WAL flush operations per second.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 62
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_snapshot_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_wal_flush_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "InfluxDB 3 \u2014 WAL & snapshots \u2014 rates",
+          "type": "timeseries"
+        }
+      ],
+      "title": "InfluxDB 3 \u2014 WAL & snapshots",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "HTTP request handling and the query log: plan \u2192 execute \u2192 ingester \u2192 result.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "id": 21,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average per query: deduplicated parquet files and partitions, ingester partition count, ingester response rows and size, peak memory, rows returned, parquet files read, partitions scanned, plus the current query phase.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 49
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_deduplicated_parquet_files\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_deduplicated_partitions\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_ingester_partition_count\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_ingester_response_rows\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_ingester_response_size\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_max_memory\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Query path \u2014 counts (1)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average per query: deduplicated parquet files and partitions, ingester partition count, ingester response rows and size, peak memory, rows returned, parquet files read, partitions scanned, plus the current query phase.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 49
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_num_rows\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_parquet_files\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_partitions\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"influxdb_iox_query_log_phase_current\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Query path \u2014 counts (2)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average query timings across the request and query-log phases: HTTP request, compute, end-to-end, execute, ingester latency to data and to plan, logical/physical/total plan, and permit wait.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 56
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"http_request_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_compute_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_end2end_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_execute_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_ingester_latency_to_full_data_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_ingester_latency_to_plan_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Query path \u2014 durations (1)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average query timings across the request and query-log phases: HTTP request, compute, end-to-end, execute, ingester latency to data and to plan, logical/physical/total plan, and permit wait.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 56
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_logical_plan_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_permit_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_physical_plan_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"influxdb_iox_query_log_plan_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Query path \u2014 durations (2)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "http_response_body_size_bytes: average response body size (derivative of sum \u00f7 derivative of count).",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 63
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"http_response_body_size_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Query path \u2014 memory & storage",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "influxdb_iox_query_log_phase_entered_total: query phase transitions per second. query_datafusion_query_execution_ooms_total: queries killed by DataFusion memory exhaustion \u2014 must stay at 0.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 63
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb_iox_query_log_phase_entered_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"query_datafusion_query_execution_ooms_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Query path \u2014 rates",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "http_requests_total per second \u2014 total API request rate, writes and queries together.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 70
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"http_requests_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Query path \u2014 request rates",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Query path",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "Allocator pools and process identity.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 22,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "process_start_time_seconds shown as a timestamp \u2014 a jump means the process restarted.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 50
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"process_start_time_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Memory & process \u2014 durations",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "datafusion_mem_pool_bytes: memory held by the DataFusion pool. jemalloc_memstats_bytes: allocator statistics.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 50
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"datafusion_mem_pool_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"jemalloc_memstats_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Memory & process \u2014 memory & storage",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Memory & process",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "IOx async semaphore that caps query concurrency (holders and permits).",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 51
+      },
+      "id": 23,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Semaphore occupancy: holders and permits acquired, pending, and their high-water marks (\u2026_hwm = peak since process start), plus the total permits configured.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 51
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_holders_acquired\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT max(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_holders_acquired_hwm\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_holders_pending\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT max(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_holders_pending_hwm\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_permits_acquired\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT max(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_permits_acquired_hwm\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Async semaphore \u2014 counts (1)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Semaphore occupancy: holders and permits acquired, pending, and their high-water marks (\u2026_hwm = peak since process start), plus the total permits configured.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 51
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_permits_pending\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT max(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_permits_pending_hwm\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"iox_async_semaphore_permits_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Async semaphore \u2014 counts (2)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average semaphore acquire time and average first-poll wait \u2014 queueing delay in front of the permit.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 58
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"iox_async_semaphore_acquire_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"iox_async_semaphore_first_poll_wait_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Async semaphore \u2014 durations",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Holders and permits cancelled while pending, per second \u2014 work that gave up waiting for a permit. Sustained non-zero means the semaphore is the bottleneck.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 58
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"iox_async_semaphore_holders_cancelled_while_pending_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"iox_async_semaphore_permits_cancelled_while_pending_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Async semaphore \u2014 rates",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Async semaphore",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "Object-store (S3) traffic between InfluxDB 3 and SeaweedFS.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "id": 24,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average objects per transfer and transfer operations per second.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 52
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"object_store_transfer_objects_hist\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"object_store_transfer_objects_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Object store \u2014 counts",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average object-store operation duration, time to response headers, and time to first byte.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 52
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"object_store_op_duration_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"object_store_op_headers_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"object_store_op_ttfb_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Object store \u2014 durations",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "object_store_transfer_bytes_hist: average bytes per transfer. transfer_bytes_total: bytes per second.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "bytes"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 59
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"object_store_transfer_bytes_hist\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"object_store_transfer_bytes_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Object store \u2014 memory & storage",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Object store",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "description": "Rust runtime health: queues, workers, panics and hang counters.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 25,
+      "panels": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Runtime occupancy: blocking and global queue depth, alive tasks, worker / blocking / idle thread counts, and per-worker local queue depth.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 53
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_runtime_blocking_queue_depth\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_runtime_global_queue_depth\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_runtime_num_alive_tasks\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_runtime_num_blocking_threads\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_runtime_num_idle_blocking_threads\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_runtime_num_workers\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Tokio & failures \u2014 counts (1)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Runtime occupancy: blocking and global queue depth, alive tasks, worker / blocking / idle thread counts, and per-worker local queue depth.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 53
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_worker_local_queue_depth\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Tokio & failures \u2014 counts (2)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Average watchdog response time, mean poll time per task, and the rate of total worker busy time \u2014 i.e. how much worker capacity is in use.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 0.25
+                  },
+                  {
+                    "color": "red",
+                    "value": 1
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 60
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"sum\"), 1s) / non_negative_derivative(max(\"count\"), 1s) AS \"avg\" FROM \"tokio_watchdog_response_time_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT mean(\"gauge\") AS \"value\" FROM \"tokio_worker_mean_poll_time_seconds\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_total_busy_duration_seconds_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Tokio & failures \u2014 durations",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Runtime event rates: panics (must be 0), watchdog hangs (must be 0), budget forced yields, IO-driver fd registration and readiness, remote and local schedules, noop polls, overflow, park, poll and steal counters.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 60
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"thread_panic_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_runtime_budget_forced_yield_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_runtime_io_driver_fd_deregistered_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_runtime_io_driver_fd_registered_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_runtime_io_driver_ready_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_runtime_remote_schedule_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Tokio & failures \u2014 rates (1)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Runtime event rates: panics (must be 0), watchdog hangs (must be 0), budget forced yields, IO-driver fd registration and readiness, remote and local schedules, noop polls, overflow, park, poll and steal counters.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 67
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_watchdog_hangs_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_local_schedule_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_noop_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_overflow_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_park_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "E",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_poll_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "F",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Tokio & failures \u2014 rates (2)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "description": "Runtime event rates: panics (must be 0), watchdog hangs (must be 0), budget forced yields, IO-driver fd registration and readiness, remote and local schedules, noop polls, overflow, park, poll and steal counters.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 6,
+                "lineWidth": 1,
+                "showPoints": "never",
+                "spanNulls": true,
+                "thresholdsStyle": {
+                  "mode": "dashed"
+                }
+              },
+              "decimals": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 12,
+            "y": 67
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "lastNotNull",
+                "max"
+              ],
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_steal_count_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"tokio_worker_steal_operations_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "B",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Tokio & failures \u2014 rates (3)",
+          "type": "timeseries"
+        }
+      ],
+      "title": "Tokio & failures",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "description": "Compaction health from the compactor's /metrics. Backlog pins gen0 files into every query scan, so lag is a query-cost problem before it is a storage problem.",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 26,
+      "panels": [],
+      "title": "InfluxDB 3 \u2014 Compaction (Pacha Tree)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Age of the oldest snapshot the compactor has not yet merged, per ingest node (influxdb3_compactor_snapshot_lag_seconds, scraped from the compactor's /metrics). Do not alert on this alone: the metric reports 0 for a node that has never compacted, so a brand-new node looks perfect while holding a backlog. Alert on uncompacted snapshots.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 60
+              },
+              {
+                "color": "red",
+                "value": 300
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 55
+      },
+      "id": 27,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"gauge\") AS \"lag_s\" FROM \"influxdb3_compactor_snapshot_lag_seconds\" WHERE $timeFilter GROUP BY time($__interval), \"node_id\" fill(previous)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Compaction lag \u2014 oldest uncompacted snapshot",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Snapshots discovered but not compacted, per ingest node. Each one pins its gen0 files into every query's scan set \u2014 this is the real cost of lag. Sustained >5 is worth a look; >20 means queries are reading a wide file set.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 55
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"gauge\") AS \"uncompacted\" FROM \"influxdb3_compactor_uncompacted_snapshots\" WHERE $timeFilter GROUP BY time($__interval), \"node_id\" fill(previous)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Uncompacted snapshots (backlog pinning gen0 into every scan)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "1 = this node holds the compactor lease and is scheduling compaction. No node reporting 1 means nothing is compacting; more than one for longer than a lease term means split-brain.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "red",
+              "value": null
+            },
+            {
+              "color": "green",
+              "value": 1
+            }
+          ],
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 63
+      },
+      "id": 29,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT last(\"gauge\") AS \"primary\" FROM \"influxdb3_compactor_is_primary\" WHERE $timeFilter",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Compactor primary",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Snapshots that failed to compact and are accumulating. Non-zero is a gate, not just a symptom: --recover-deferred-snapshots only runs while every ingest node has fewer in-flight snapshots than --recover-deferred-snapshots-in-flight-limit (default 3), which a busy cluster never drops below. Raise the limit to 32+ to let recovery drain.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "thresholds": [
+            {
+              "color": "green",
+              "value": null
+            },
+            {
+              "color": "red",
+              "value": 1
+            }
+          ],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 63
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "background_gradient",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT last(\"gauge\") AS \"deferred\" FROM \"influxdb3_compactor_deferred_snapshots\" WHERE $timeFilter GROUP BY \"node_id\"",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Deferred snapshots",
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[^ ]+ \\{ \\w+: (.*) \\}$",
+            "renamePattern": "$1"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^[a-z0-9_]+\\.[a-z0-9_]+$",
+            "renamePattern": "value"
+          }
+        }
+      ],
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "bg24j3hn03cw0d"
+      },
+      "description": "Admission budget (--compactor-input-size-budget, default 50% of RAM) vs bytes in flight. Used pinned at the budget while uncompacted snapshots climb means capacity, not a stall: raise the budget or add a compact node.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisPlacement": "auto",
+            "drawStyle": "line",
+            "fillOpacity": 6,
+            "lineWidth": 1,
+            "showPoints": "never",
+            "spanNulls": true,
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 63
+      },
+      "id": 31,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"gauge\") AS \"used\" FROM \"influxdb3_compactor_memory_used_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(previous)",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "bg24j3hn03cw0d"
+          },
+          "intervalMs": 60000,
+          "maxDataPoints": 300,
+          "query": "SELECT max(\"gauge\") AS \"budget\" FROM \"influxdb3_compactor_memory_budget_bytes\" WHERE $timeFilter GROUP BY time($__interval) fill(previous)",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        }
+      ],
+      "title": "Compactor memory \u2014 used vs budget",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 39,
+  "tags": [
+    "telegraf",
+    "influxdb3",
+    "infrastructure",
+    "seaweedfs"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-3h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Telegraf \u2014 All Measurements",
+  "uid": "telegraf-all-measurements",
+  "version": 13
+}

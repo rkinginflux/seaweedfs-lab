@@ -361,9 +361,12 @@ PANEL_DESCRIPTIONS = {
     "Host / OS — rates":
         "diskio: read and write IOPS summed across devices. kernel: context switches, "
         "interrupts and forks per second.",
-    "Host / OS — utilisation":
-        "cpu: busy = 100 − usage_idle on cpu-total. disk: space and inode used_percent per "
-        "mount. mem / swap: used_percent per host.",
+    "Host / OS — CPU utilisation":
+        "CPU busy = 100 − usage_idle on cpu-total, per host.",
+    "Host / OS — memory utilisation":
+        "Memory used_percent per host.",
+    "Host / OS — disk utilisation":
+        "Disk space and inode used_percent per host and mount.",
     "Host / OS — counts":
         "processes: running, blocked, zombie and total counts. system: load1/5/15 and uptime.",
     # ---- seaweedfs
@@ -546,7 +549,8 @@ def thresholds(unit: str):
     return {"mode": "absolute", "steps": [{"color": "green", "value": None}]}
 
 
-def timeseries_panel(title, targets, description, unit, grid_pos, ref_start=0):
+def timeseries_panel(title, targets, description, unit, grid_pos, ref_start=0,
+                     steps=None):
     return {
         "type": "timeseries", "title": title, "description": description,
         "datasource": DS,
@@ -562,7 +566,8 @@ def timeseries_panel(title, targets, description, unit, grid_pos, ref_start=0):
                        "showPoints": "never", "spanNulls": True,
                        "axisPlacement": "auto", "axisBorderShow": False,
                        "thresholdsStyle": {"mode": "dashed"}},
-            "thresholds": thresholds(unit)}, "overrides": []},
+            "thresholds": {"mode": "absolute",
+                           "steps": steps or thresholds(unit)["steps"]}}, "overrides": []},
         "options": {"legend": {"displayMode": "table",
                                "placement": "bottom" if len(targets) >= 4 else "right",
                                "showLegend": True, "calcs": ["lastNotNull", "max"]},
@@ -595,6 +600,29 @@ def stat_panel(title, query, unit, grid_pos, steps=None, desc=""):
 
 EXPANDED_GROUPS = {"Host / OS", "SeaweedFS"}
 
+# Some host metrics earn their own panel (and a narrower width) instead of sharing the
+# unit-based panel: cpu/mem/disk utilisation answer different questions and mixing them
+# made the legend unreadable.
+PANEL_SPLIT = {
+    "cpu": ("CPU utilisation", 8),
+    "mem": ("memory utilisation", 8),
+    "disk": ("disk utilisation", 8),
+}
+
+# Measurements deliberately left off the dashboard, with the reason. They still count as
+# covered, so the completeness check keeps its meaning.
+SKIP_MEASUREMENTS = {
+    "swap": "swap is unused on these nodes; the panel was dropped in dashboard v12",
+    "seaweedfs_volume": "one series per volume — charted on the 'SeaweedFS — Volumes' board",
+}
+
+# Whole families that are curated by hand instead of auto-charted: the compactor exposes
+# ~70 metrics, and five panels answering real questions beat seventy time series nobody
+# reads. See the "InfluxDB 3 — Compaction (Pacha Tree)" section at the end of build().
+SKIP_PREFIXES = {
+    "influxdb3_compactor_": "curated in the Compaction (Pacha Tree) section",
+}
+
 
 def row(title, y, collapsed=False, desc=""):
     return {"type": "row", "title": title, "collapsed": collapsed, "description": desc,
@@ -606,9 +634,17 @@ def build(schema, tags, fields):
     measurements = sorted(schema)
     units: dict[str, str] = {}
     buckets: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    widths: dict[tuple[str, str], int] = {}
+    bucket_units: dict[tuple[str, str], str] = {}
     coverage: list[str] = []
 
     for name in measurements:
+        skip_reason = SKIP_MEASUREMENTS.get(name) or next(
+            (why for prefix, why in SKIP_PREFIXES.items() if name.startswith(prefix)), None)
+        if skip_reason:
+            print(f"  - not charted: {name} — {skip_reason}", file=sys.stderr)
+            coverage.append(name)
+            continue
         target, unit = build_targets(name, fields[name], tags[name])
         if target is None:
             print(f"  ! no numeric field, skipped: {name}", file=sys.stderr)
@@ -617,7 +653,10 @@ def build(schema, tags, fields):
         short = name
         target["label"] = short
         target["measurement"] = name
-        buckets[(group, unit)].append(target)
+        label, width = PANEL_SPLIT.get(name, (UNIT_LABEL.get(unit, unit), 12))
+        buckets[(group, label)].append(target)
+        widths[(group, label)] = width
+        bucket_units[(group, label)] = unit
         units[name] = unit
         coverage.append(name)
 
@@ -663,13 +702,14 @@ def build(schema, tags, fields):
         collapsed = group not in EXPANDED_GROUPS
         group_panels = []
         col, row_y, max_h = 0, y, 0
-        for unit in dict.fromkeys(k[1] for k in keys):
-            targets = buckets[(group, unit)]
+        for label in dict.fromkeys(k[1] for k in keys):
+            targets = buckets[(group, label)]
+            width = widths.get((group, label), 12)
             for chunk_start in range(0, len(targets), 6):
                 chunk = targets[chunk_start:chunk_start + 6]
                 title = group
                 if len(keys) > 1:
-                    title += f" — {UNIT_LABEL.get(unit, unit)}"
+                    title += f" — {label}"
                 if len(targets) > 6:
                     title += f" ({chunk_start // 6 + 1})"
                 base = re.sub(r" \(\d+\)$", "", title)
@@ -680,9 +720,10 @@ def build(schema, tags, fields):
                         title,
                         "; ".join(f"{t['measurement']}: {t['desc']}" for t in chunk))
                 group_panels.append(timeseries_panel(
-                    title, chunk, desc, unit, {"x": col, "y": row_y, "w": 12, "h": 7}))
+                    title, chunk, desc, bucket_units.get((group, label), "none"),
+                    {"x": col, "y": row_y, "w": width, "h": 7}))
                 max_h = max(max_h, 7)
-                col += 12
+                col += width
                 if col >= 24:
                     col, row_y = 0, row_y + max_h
                     max_h = 0
@@ -697,6 +738,71 @@ def build(schema, tags, fields):
             panels.append(row_panel)
             panels.extend(group_panels)
             y = row_y + (max_h or 7)
+
+
+    # ---- InfluxDB 3 compaction (Pacha Tree): the compactor's own /metrics, which the
+    # Telegraf prometheus input only started scraping when the second target was added.
+    # Without these panels a compaction backlog is invisible until queries slow down.
+    panels.append(row("InfluxDB 3 — Compaction (Pacha Tree)", y, collapsed=False,
+                      desc="Compaction health from the compactor's /metrics. Backlog pins "
+                           "gen0 files into every query scan, so lag is a query-cost "
+                           "problem before it is a storage problem."))
+    y += 1
+    panels.append(timeseries_panel(
+        "Compaction lag — oldest uncompacted snapshot",
+        [{"query": 'SELECT max("gauge") AS "lag_s" FROM "influxdb3_compactor_snapshot_lag_seconds" '
+                   'WHERE $timeFilter GROUP BY time($__interval), "node_id" fill(previous)',
+          "desc": "per ingest node"}],
+        "Age of the oldest snapshot the compactor has not yet merged, per ingest node "
+        "(influxdb3_compactor_snapshot_lag_seconds, scraped from the compactor's /metrics). "
+        "Do not alert on this alone: the metric reports 0 for a node that has never "
+        "compacted, so a brand-new node looks perfect while holding a backlog. Alert on "
+        "uncompacted snapshots.",
+        "s", {"x": 0, "y": y, "w": 12, "h": 8},
+        steps=[{"color": "green", "value": None}, {"color": "yellow", "value": 60},
+               {"color": "red", "value": 300}]))
+    panels.append(timeseries_panel(
+        "Uncompacted snapshots (backlog pinning gen0 into every scan)",
+        [{"query": 'SELECT max("gauge") AS "uncompacted" FROM "influxdb3_compactor_uncompacted_snapshots" '
+                   'WHERE $timeFilter GROUP BY time($__interval), "node_id" fill(previous)',
+          "desc": "per ingest node"}],
+        "Snapshots discovered but not compacted, per ingest node. Each one pins its gen0 "
+        "files into every query's scan set — this is the real cost of lag. Sustained >5 is "
+        "worth a look; >20 means queries are reading a wide file set.",
+        "short", {"x": 12, "y": y, "w": 12, "h": 8},
+        steps=[{"color": "green", "value": None}, {"color": "yellow", "value": 5},
+               {"color": "red", "value": 20}]))
+    y += 8
+    panels.append(stat_panel(
+        "Compactor primary",
+        'SELECT last("gauge") AS "primary" FROM "influxdb3_compactor_is_primary" WHERE $timeFilter',
+        "none", {"x": 0, "y": y, "w": 6, "h": 6},
+        steps=[{"color": "red", "value": None}, {"color": "green", "value": 1}],
+        desc="1 = this node holds the compactor lease and is scheduling compaction. No node "
+             "reporting 1 means nothing is compacting; more than one for longer than a lease "
+             "term means split-brain."))
+    panels.append(stat_panel(
+        "Deferred snapshots",
+        'SELECT last("gauge") AS "deferred" FROM "influxdb3_compactor_deferred_snapshots" '
+        'WHERE $timeFilter GROUP BY "node_id"',
+        "short", {"x": 6, "y": y, "w": 6, "h": 6},
+        steps=[{"color": "green", "value": None}, {"color": "red", "value": 1}],
+        desc="Snapshots that failed to compact and are accumulating. Non-zero is a gate, not "
+             "just a symptom: --recover-deferred-snapshots only runs while every ingest node "
+             "has fewer in-flight snapshots than --recover-deferred-snapshots-in-flight-limit "
+             "(default 3), which a busy cluster never drops below. Raise the limit to 32+ to "
+             "let recovery drain."))
+    panels.append(timeseries_panel(
+        "Compactor memory — used vs budget",
+        [{"query": 'SELECT max("gauge") AS "used" FROM "influxdb3_compactor_memory_used_bytes" '
+                   'WHERE $timeFilter GROUP BY time($__interval) fill(previous)', "desc": "in flight"},
+         {"query": 'SELECT max("gauge") AS "budget" FROM "influxdb3_compactor_memory_budget_bytes" '
+                   'WHERE $timeFilter GROUP BY time($__interval) fill(previous)', "desc": "admission budget"}],
+        "Admission budget (--compactor-input-size-budget, default 50% of RAM) vs bytes in "
+        "flight. Used pinned at the budget while uncompacted snapshots climb means capacity, "
+        "not a stall: raise the budget or add a compact node.",
+        "bytes", {"x": 12, "y": y, "w": 12, "h": 6}))
+    y += 6
 
     dash = {
         "uid": DASH_UID, "title": DASH_TITLE,
