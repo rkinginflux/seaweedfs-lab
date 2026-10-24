@@ -194,9 +194,10 @@ Details:
   evaluates every minute. It queries `seaweedfs_cluster` directly (`GROUP BY
   time(1m) fill(previous)` over a 15m window), so it does not depend on a
   dashboard being open.
-- The annotation carries the live value (`{{ $values.B }}`) plus the fix —
-  raise `master.maxVolumes` (30 GB per volume, so ~330 GB of PVC headroom for 11
-  slots) and `helm upgrade seaweedfs --atomic --wait`.
+- The annotation carries the live value (`{{ $values.B }}`) plus the fix — add slots to
+  the data dir that has room (`volume.dataDirs[].maxVolumes`; each slot is 1 GB because
+  `volumeSizeLimitMB` is 1000) and `helm upgrade seaweedfs --atomic --wait`. The lab now
+  has two dirs, so `Max` in `/dir/status` is the sum: 1720.
 - The contact point reuses the Hermes Telegram bot (token read from
   `~/.hermes/.env`, never committed); the default notification policy routes to
   it with a 30s group wait and a 12h repeat interval.

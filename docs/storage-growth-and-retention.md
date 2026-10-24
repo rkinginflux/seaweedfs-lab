@@ -21,9 +21,11 @@ queries and commands needed to reproduce it.
 - Fix applied: `maxVolumes` raised to 220 (≈220 GB against ~343 GB free on the volume
   node), and the capacity alert now fires below 5 free slots — it fired at 23:30 with
   4 free, 24 minutes before writes failed.
-- The `telegraf` database now has an **8-hour retention policy**. It is live and
-  verified below. Storage has not plateaued yet, and SeaweedFS has reclaimed nothing
-  so far because it reports no garbage yet.
+- The `telegraf` database was given an **8-hour retention policy** on 2026-10-24 03:00 UTC
+  and verified live (oldest point exactly 8 h behind). It has since been removed: the lab
+  added a second 1.8 TB disk (`misc`) and raised the slot budget to 1720, and the oldest
+  point is now ~18 h behind. At the measured ~6 GB/h that is roughly twelve days of
+  headroom on 1.7 TB — the window is still the cheap insurance, not a permanent fix.
 
 ## Measured growth
 

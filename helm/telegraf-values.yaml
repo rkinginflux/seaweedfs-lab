@@ -74,6 +74,10 @@ config:
         bearer_token_string: "$TOKEN"
         urls:
           - "http://influxdb3-querier.influxdb3.svc.cluster.local:8181/metrics"
+          # Scrape every InfluxDB 3 node that serves /metrics, not just one. In the
+          # enterprise chart these are db3-influxdb3-enterprise-{ingester,compactor};
+          # scraping only the ingest path hid compaction backlog completely.
+          - "http://influxdb3-compactor.influxdb3.svc.cluster.local:8181/metrics"
     # The SeaweedFS input plugin from ../telegraf-plugin. Volume servers are
     # discovered through the master topology, which resolves inside the cluster.
     - seaweedfs:

@@ -83,9 +83,13 @@ kubectl -n s3 exec seaweedfs-master-0 -- wget -qO- http://127.0.0.1:9333/dir/sta
 Expect `Max: 1720` (220 data1 + 1500 misc). `Max` minus volumes in use is the
 free-slot count. The pinned chart defaults the master to
 `volumeSizeLimitMB: 1000`, so a slot is **1 GB** — `maxVolumes` is a GB ceiling, not a
-count of 30 GB volumes. At zero free slots the master cannot grow a volume, S3 PUTs
-return 500, the ingester stalls, and telemetry stops with no error in Grafana. That
-happened twice here; `docs/storage-growth-and-retention.md` has the measurements.
+count of 30 GB volumes.
+
+The budget is per data dir (`data1` 220, `misc` 1500), which is why `Max` is 1720 rather
+than 220; the preflight above covers the disk, the PV binding and the startup guard. At
+zero free slots the master cannot grow a volume, S3 PUTs return 500, the ingester stalls,
+and telemetry stops with no error in Grafana. That happened twice here;
+`docs/storage-growth-and-retention.md` has the measurements.
 
 Optional web UIs on the LAN (no auth, lab only):
 
@@ -136,7 +140,7 @@ kubectl -n influxdb3 rollout status statefulset/db3-influxdb3-enterprise-querier
 
 ### 2.1 Optional processor flags — a one-way door
 
-`helm/patch-db3-processor.sh` adds `--mode=process,query,ingest,webui`, which is what
+`helm/patch-db3-modes.sh` adds `--mode=process,query,ingest,webui`, which is what
 serves InfluxDB 3 Explorer. On a **fresh** cluster this is optional: the processor starts
 fine with the chart's hardcoded `--mode=process,query`, you just get no web UI. Once run:
 
@@ -156,7 +160,7 @@ The upgrade cycle then becomes:
 ```shell
 helm upgrade db3 influxdata/influxdb3-enterprise -n influxdb3 --version 0.16.1 \
   -f helm/influxdb3-enterprise-values.yaml --force-conflicts   # deliberately no --wait
-./helm/patch-db3-processor.sh
+./helm/patch-db3-modes.sh
 kubectl -n influxdb3 delete pod db3-influxdb3-enterprise-processor-0  # only if crashlooping
 ```
 
@@ -173,8 +177,11 @@ kubectl -n influxdb3 exec db3-influxdb3-enterprise-querier-0 -- sh -c \
      --token '$TOKEN' --host http://127.0.0.1:8181"
 ```
 
-Eight hours is what keeps this lab inside its disk budget; without retention the bucket
-grew ~8 GB/h and exhausted the volume slots twice. Change it later, and verify:
+Eight hours is what keeps the lab inside its disk budget; without retention the bucket grew
+~6-8 GB/h and exhausted the volume slots twice. This lab later added the 1.8 TB `misc`
+disk and removed the window, which buys roughly twelve days at 6 GB/h before either the
+disk (1.7 TB free) or the slots (1720) run out — so a window is still the sane default, and
+`min(time)` is how you check what is actually enforced. Change it later, and verify:
 
 ```shell
 kubectl -n influxdb3 exec db3-influxdb3-enterprise-querier-0 -- sh -c \

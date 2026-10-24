@@ -136,9 +136,10 @@ def ensure_rule(folder: str):
                 "free_volume_slots has been below %d for 5 minutes. When it reaches 0 "
                 "the filer returns 500 'No writable volumes and no free volumes left' "
                 "and S3 PUTs fail.\n\n"
-                "Fix: raise master.maxVolumes in the seaweedfs helm values (each volume "
-                "is 30 GB, so 11 slots need ~330 GB free on /data1), then "
-                "helm upgrade seaweedfs --atomic --wait.\n\n"
+                "Fix: raise maxVolumes on the data dir that has room "
+                "(volume.dataDirs[].maxVolumes in the seaweedfs helm values). Each slot "
+                "is 1 GB here because volumeSizeLimitMB is 1000, so N slots need ~N GB "
+                "free on that disk. Then helm upgrade seaweedfs --atomic --wait.\n\n"
                 "Runbook: https://github.com/rkinginflux/seaweedfs-lab/blob/main/docs/runbook.md"
             ) % THRESHOLD,
         },

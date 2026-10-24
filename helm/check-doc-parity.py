@@ -33,7 +33,7 @@ FILE_MAP = {
     "~/lab/influxdb3-enterprise-values.yaml": "helm/influxdb3-enterprise-values.yaml",
     "~/lab/seaweedfs-values.yaml": "helm/seaweedfs-values.yaml",
     "~/lab/seaweedfs-ui-proxy.yaml": "helm/seaweedfs-ui-proxy.yaml",
-    "~/lab/patch-db3-webui.sh": "helm/patch-db3-processor.sh",
+    "~/lab/patch-db3-modes.sh": "helm/patch-db3-modes.sh",
 }
 FILE_MAP.update({k.replace("~/lab/", "$HOME/lab/"): v for k, v in list(FILE_MAP.items())})
 
