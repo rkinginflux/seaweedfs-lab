@@ -31,7 +31,10 @@ FOLDER_TITLE = "SeaweedFS"
 CP_NAME = "telegram-rick"
 RULE_TITLE = "SeaweedFS volume slots low"
 RULE_GROUP = "seaweedfs-capacity"
-THRESHOLD = 5
+# Free-slot warning threshold. Sized for the real budget (1720 slots across two data
+# dirs) and the observed burn rate (~5 volumes/hour): 50 slots is roughly ten hours of
+# warning, where 5 was about one hour.
+THRESHOLD = 50
 
 
 def kubectl_secret(namespace: str, name: str, key: str) -> str:

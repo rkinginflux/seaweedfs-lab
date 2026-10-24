@@ -28,8 +28,9 @@ kubectl -n s3 exec seaweedfs-filer-0 -- \
   Slot capacity is not reserved disk space; monitor both filesystems.
 
   Watch it from the metrics instead of the API: `/dir/status` → `Free` is exported
-  as `free_volume_slots` in `seaweedfs_cluster`, and the `SeaweedFS volume slots
-  low` Grafana alert fires below 5.
+  as `free_volume_slots` in `seaweedfs_cluster`, and the `SeaweedFS volume slots low`
+  Grafana alert fires below 50 — ten hours of warning at the observed ~5 volumes/hour,
+  where the original threshold of 5 was about one hour.
 - **disk bytes** — per-disk `used_percent` from `seaweedfs_disk`.
 
 To add capacity:

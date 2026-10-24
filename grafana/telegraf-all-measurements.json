@@ -4,7 +4,6 @@
   },
   "editable": true,
   "graphTooltip": 1,
-  "id": 1581325471768576,
   "panels": [
     {
       "datasource": {
@@ -18,12 +17,15 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "green",
-              "value": null
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
           "unit": "ops"
         },
         "overrides": []
@@ -94,20 +96,23 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "green",
-              "value": null
-            },
-            {
-              "color": "yellow",
-              "value": 70
-            },
-            {
-              "color": "red",
-              "value": 85
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 85
+              }
+            ]
+          },
           "unit": "percent"
         },
         "overrides": []
@@ -178,20 +183,23 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "green",
-              "value": null
-            },
-            {
-              "color": "yellow",
-              "value": 80
-            },
-            {
-              "color": "red",
-              "value": 92
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 92
+              }
+            ]
+          },
           "unit": "percent"
         },
         "overrides": []
@@ -262,20 +270,23 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "green",
-              "value": null
-            },
-            {
-              "color": "yellow",
-              "value": 80
-            },
-            {
-              "color": "red",
-              "value": 90
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 80
+              },
+              {
+                "color": "red",
+                "value": 90
+              }
+            ]
+          },
           "unit": "percent"
         },
         "overrides": []
@@ -339,27 +350,30 @@
         "type": "influxdb",
         "uid": "bg24j3hn03cw0d"
       },
-      "description": "When this hits 0, S3 writes fail",
+      "description": "Free volume slots across both data dirs (1720 total). At 0 the master cannot grow a volume and S3 writes fail; ~5 volumes/hour burn makes 50 about ten hours",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "red",
-              "value": null
-            },
-            {
-              "color": "yellow",
-              "value": 1
-            },
-            {
-              "color": "green",
-              "value": 5
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "green",
+                "value": 200
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": []
@@ -430,16 +444,19 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "green",
-              "value": null
-            },
-            {
-              "color": "red",
-              "value": 0.0001
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.0001
+              }
+            ]
+          },
           "unit": "ops"
         },
         "overrides": []
@@ -5315,16 +5332,19 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "red",
-              "value": null
-            },
-            {
-              "color": "green",
-              "value": 1
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
           "unit": "none"
         },
         "overrides": []
@@ -5395,16 +5415,19 @@
             "mode": "thresholds"
           },
           "decimals": 1,
-          "thresholds": [
-            {
-              "color": "green",
-              "value": null
-            },
-            {
-              "color": "red",
-              "value": 1
-            }
-          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
           "unit": "short"
         },
         "overrides": []
@@ -5569,6 +5592,5 @@
   },
   "timezone": "browser",
   "title": "Telegraf \u2014 All Measurements",
-  "uid": "telegraf-all-measurements",
-  "version": 13
+  "uid": "telegraf-all-measurements"
 }

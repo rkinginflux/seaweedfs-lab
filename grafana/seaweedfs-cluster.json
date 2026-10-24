@@ -5,7 +5,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Highest used percentage per disk, across all scrapers.",
       "fieldConfig": {
@@ -62,7 +62,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -78,7 +78,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Bytes used on the SeaweedFS volume disks.",
       "fieldConfig": {
@@ -125,7 +125,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -141,7 +141,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Lowest free bytes across disks. Red below 50 GB, green above 150 GB.",
       "fieldConfig": {
@@ -196,7 +196,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -212,7 +212,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Unused volume slots of the least empty volume server. At 0 the master cannot grow new volumes.",
       "fieldConfig": {
@@ -230,11 +230,11 @@
               },
               {
                 "color": "yellow",
-                "value": 1
+                "value": 50
               },
               {
                 "color": "green",
-                "value": 5
+                "value": 200
               }
             ]
           },
@@ -267,7 +267,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -282,6 +282,7 @@
     },
     {
       "collapsed": false,
+      "description": "Disk, volume-slot and per-collection capacity for the SeaweedFS cluster.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -296,7 +297,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Used and free bytes per volume disk.",
       "fieldConfig": {
@@ -342,7 +343,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -354,7 +355,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -379,7 +380,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Sustained values above 80 % need attention: SeaweedFS stops writing to a volume server at 95 % by default.",
       "fieldConfig": {
@@ -445,7 +446,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -470,7 +471,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Used volumes and free volume slots per volume server.",
       "fieldConfig": {
@@ -516,7 +517,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -541,7 +542,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Cluster-wide volumes, maximum slots and free slots.",
       "fieldConfig": {
@@ -587,7 +588,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -612,7 +613,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Physical bytes per collection (replicas counted).",
       "fieldConfig": {
@@ -651,7 +652,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -675,6 +676,7 @@
     },
     {
       "collapsed": false,
+      "description": "Leader election, read-only volumes, reclaimable bytes and scraper freshness.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -689,7 +691,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Samples in which the master reported itself as leader. Must keep growing; 0 means no leader is elected.",
       "fieldConfig": {
@@ -740,7 +742,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -756,7 +758,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Read-only volumes reject writes. Should always be 0.",
       "fieldConfig": {
@@ -807,7 +809,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -823,9 +825,9 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
-      "description": "Deleted bytes not yet vacuumed — candidate for `weed shell volume.vacuum`. The deleted file count per collection is in the Collection snapshot table.",
+      "description": "Deleted bytes not yet vacuumed \u2014 candidate for `weed shell volume.vacuum`. The deleted file count per collection is in the Collection snapshot table.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -874,7 +876,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -890,7 +892,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Last volume ID assigned by the master.",
       "fieldConfig": {
@@ -937,7 +939,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -953,7 +955,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Samples received per Telegraf host in the selected range. A host with far fewer samples is stale.",
       "fieldConfig": {
@@ -1020,7 +1022,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -1051,7 +1053,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Erasure-coded shards and number of volume layouts.",
       "fieldConfig": {
@@ -1097,7 +1099,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -1132,6 +1134,6 @@
     "to": "now"
   },
   "timezone": "browser",
-  "title": "SeaweedFS — Cluster Overview",
+  "title": "SeaweedFS \u2014 Cluster Overview",
   "uid": "seaweedfs-cluster"
 }

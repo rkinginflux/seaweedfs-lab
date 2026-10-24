@@ -19,7 +19,8 @@ queries and commands needed to reproduce it.
   drops its buffer. **The dashboards go quiet at exactly the moment you need them**,
   because they are fed by the pipeline that just died.
 - Fix applied: `maxVolumes` raised to 220 (≈220 GB against ~343 GB free on the volume
-  node), and the capacity alert now fires below 5 free slots — it fired at 23:30 with
+  node), and the capacity alert fires when free slots drop (5 at the time, since raised
+to 50 for the larger slot budget) — it fired at 23:30 with
   4 free, 24 minutes before writes failed.
 - The `telegraf` database was given an **8-hour retention policy** on 2026-10-24 03:00 UTC
   and verified live (oldest point exactly 8 h behind). It has since been removed: the lab
@@ -81,7 +82,7 @@ Disk was never the constraint: `/dev/sda2` was 21 % used with 343 GB free throug
 | Time | Event |
 | --- | --- |
 | 23:23 | 42 volumes, 4 free slots, disk 18 % used |
-| 23:30 | `SeaweedFS volume slots low` alert fires (4 < 5) |
+| 23:30 | `SeaweedFS volume slots low` alert fires (4 slots, threshold 5 then) |
 | 23:54 | slots hit 0 → filer 500 on PUT → ingester cannot persist WAL → Telegraf writes time out and the buffer overflows (1,336 metrics dropped) |
 | 00:31–00:39 | an upgrade attempt without a pinned chart version pulled chart 4.49.0, which pins `chrislusf/seaweedfs:4.49` — a tag that was never published to Docker Hub (404) — so all six SeaweedFS pods went `ImagePullBackOff`; rolled back |
 | 00:40 | `maxVolumes` 46 → 220 applied with `--version 4.48.0`; master grew volumes, `lab` had 7 writables, ingestion resumed within the minute (newest sample 00:41:20) |

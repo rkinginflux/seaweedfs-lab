@@ -5,7 +5,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Sum of the physical size of all collections.",
       "fieldConfig": {
@@ -52,7 +52,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -68,7 +68,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Sum of the file counts of all collections.",
       "fieldConfig": {
@@ -115,7 +115,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -131,7 +131,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Physical volumes across collections (each replica counts).",
       "fieldConfig": {
@@ -178,7 +178,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -194,7 +194,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Volumes the master can still write to. Zero means the next write fails.",
       "fieldConfig": {
@@ -249,7 +249,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -264,6 +264,7 @@
     },
     {
       "collapsed": false,
+      "description": "Size, file and volume counts broken out per collection.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -278,7 +279,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Physical size per collection over time.",
       "fieldConfig": {
@@ -324,7 +325,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -349,7 +350,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Object count per collection over time.",
       "fieldConfig": {
@@ -395,7 +396,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -420,9 +421,9 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
-      "description": "",
+      "description": "Physical volume count per collection over time. Replicas are counted separately, so this tracks allocation on disk rather than logical data size.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -466,7 +467,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -491,9 +492,9 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
-      "description": "",
+      "description": "Volumes per collection the master can still write to. A collection that reaches 0 has no writable volume left and its next write fails.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -537,7 +538,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -562,7 +563,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Latest values per collection.",
       "fieldConfig": {
@@ -608,7 +609,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -641,6 +642,7 @@
     },
     {
       "collapsed": false,
+      "description": "Interval-over-interval deltas \u2014 how fast bytes and files are arriving.",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -655,9 +657,9 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
-      "description": "Non-negative difference of the collection size between buckets — the ingestion rate in bytes.",
+      "description": "Non-negative difference of the collection size between buckets \u2014 the ingestion rate in bytes.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -701,7 +703,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -726,7 +728,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
       "description": "Files added per bucket.",
       "fieldConfig": {
@@ -772,7 +774,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "${DS_INFLUXDB}"
+            "uid": "bg24j3hn03cw0d"
           },
           "intervalMs": 60000,
           "maxDataPoints": 500,
@@ -797,9 +799,9 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "${DS_INFLUXDB}"
+        "uid": "bg24j3hn03cw0d"
       },
-      "description": "",
+      "description": "How to read this dashboard: the stat cards are latest values across all collections, the per-collection series plot each collection separately, and the growth panels are non-negative differences \u2014 a shrink (delete or vacuum) is clamped to 0, not shown as negative growth.",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -815,7 +817,7 @@
         "code": {
           "showLineNumbers": false
         },
-        "content": "**Volume counts are physical.** Every replica of a volume counts, so with replication a collection shows a multiple of its logical volume count.\n\n**Growth panels** use `non_negative_difference` of the per-bucket maximum, so a bucket shows the bytes/files added inside it. Volumes are allocated in 30 GB chunks by default, which is why *Volumes per collection* moves in steps while *Stored bytes* grows smoothly.\n\n**Vacuum:** `Reclaimable bytes` above zero means deleted needles are still occupying disk — run `weed shell` → `volume.vacuum` during a quiet window.",
+        "content": "**Volume counts are physical.** Every replica of a volume counts, so with replication a collection shows a multiple of its logical volume count.\n\n**Growth panels** use `non_negative_difference` of the per-bucket maximum, so a bucket shows the bytes/files added inside it. Volumes are allocated in 30 GB chunks by default, which is why *Volumes per collection* moves in steps while *Stored bytes* grows smoothly.\n\n**Vacuum:** `Reclaimable bytes` above zero means deleted needles are still occupying disk \u2014 run `weed shell` \u2192 `volume.vacuum` during a quiet window.",
         "mode": "markdown"
       },
       "pluginVersion": "13.2.4",
@@ -837,6 +839,6 @@
     "to": "now"
   },
   "timezone": "browser",
-  "title": "SeaweedFS — Collections & Growth",
+  "title": "SeaweedFS \u2014 Collections & Growth",
   "uid": "seaweedfs-collections"
 }

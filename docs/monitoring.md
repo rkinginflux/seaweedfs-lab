@@ -105,7 +105,7 @@ from the cluster secret), then imports both dashboards.
 ### SeaweedFS — Cluster Overview (17 panels)
 
 - **Stat row** — disk used % (thresholds 70/85), disk used, disk free (red below
-  50 GB), free volume slots (red at 0)
+  50 GB), free volume slots (red below 50)
 - **Capacity** — used vs free bytes, used % trend with threshold lines, volume
   slots per server, cluster volumes/slots, stored bytes per collection
 - **Health** — leader samples, read-only volumes, reclaimable bytes, highest
@@ -124,7 +124,7 @@ because it emits one series per volume). It is the dashboard equivalent of the
 volume server's own page at `:8080/ui/index.html`, but with history and with the
 five Telegraf scrapers merged (`max()` per volume):
 
-- **Stat row** — volumes, free volume slots (red at 0), fullest volume in MiB
+- **Stat row** — volumes, free volume slots (red below 50, green from 200), fullest volume in MiB
   (yellow at 900 MiB, red at the 1000 MiB per-volume limit), largest trash
   (`deleted_bytes`) awaiting vacuum
 - **Volume inventory** — one row per volume: collection, volume id, size, files,
@@ -197,7 +197,7 @@ Wired up in Grafana unified alerting by `grafana/create_slots_alert.py`:
 
 | Rule | Condition | For | Notification |
 | --- | --- | --- | --- |
-| SeaweedFS volume slots low | `max(free_volume_slots) < 5` | 5m | Telegram (`telegram-rick`) |
+| SeaweedFS volume slots low | `max(free_volume_slots) < 50` | 5m | Telegram (`telegram-rick`) |
 
 Details:
 
@@ -209,6 +209,9 @@ Details:
   the data dir that has room (`volume.dataDirs[].maxVolumes`; each slot is 1 GB because
   `volumeSizeLimitMB` is 1000) and `helm upgrade seaweedfs --atomic --wait`. The lab now
   has two dirs, so `Max` in `/dir/status` is the sum: 1720.
+- The threshold is **50**, not 5. It was sized for 220 slots; at 1720 slots with the
+  observed ~5 volumes/hour burn, 5 slots was about an hour of warning and 50 is roughly
+  ten. The dashboards use the same 50/200 pair (red below 50, green from 200).
 - The contact point reuses the Hermes Telegram bot (token read from
   `~/.hermes/.env`, never committed); the default notification policy routes to
   it with a 30s group wait and a 12h repeat interval.

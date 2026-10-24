@@ -585,7 +585,10 @@ def stat_panel(title, query, unit, grid_pos, steps=None, desc=""):
         "fieldConfig": {"defaults": {
             "unit": unit, "decimals": 1,
             "color": {"mode": "thresholds"},
-            "thresholds": steps or thresholds(unit)}, "overrides": []},
+            # Grafana wants {"mode", "steps"}; passing a bare list here silently makes it
+            # ignore the thresholds (which is why the summary cards never coloured).
+            "thresholds": {"mode": "absolute", "steps": steps} if steps else thresholds(unit)},
+            "overrides": []},
         "options": {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
                     "colorMode": "background_gradient", "graphMode": "area",
                     "justifyMode": "auto", "orientation": "auto", "textMode": "auto"},
@@ -680,7 +683,9 @@ def build(schema, tags, fields):
          "percent", [("green", None), ("yellow", 80), ("red", 90)], "Root filesystem per node"),
         ("SeaweedFS slots free", 'SELECT max("free_volume_slots") AS "free" FROM "seaweedfs_cluster" '
                                  'WHERE $timeFilter GROUP BY time($__interval)',
-         "short", [("red", None), ("yellow", 1), ("green", 5)], "When this hits 0, S3 writes fail"),
+         "short", [("red", None), ("yellow", 50), ("green", 200)],
+         "Free volume slots across both data dirs (1720 total). At 0 the master cannot "
+         "grow a volume and S3 writes fail; ~5 volumes/hour burn makes 50 about ten hours"),
         ("Telegraf write errors", 'SELECT non_negative_derivative(max("write_errors"), 1s) AS "errors" '
                                   'FROM "internal_agent" WHERE $timeFilter GROUP BY time($__interval)',
          "ops", [("green", None), ("red", 0.0001)], "Output write error rate"),

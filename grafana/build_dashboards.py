@@ -268,7 +268,7 @@ def cluster_overview():
              steps=[("red", None), ("yellow", 5e10), ("green", 1.5e11)],
              desc="Lowest free bytes across disks. Red below 50 GB, green above 150 GB."),
         stat("Volume slots free", Q_SLOTS, grid(18, 0, 6, 5), unit="none", decimals=0,
-             steps=[("red", None), ("yellow", 1), ("green", 5)],
+             steps=[("red", None), ("yellow", 50), ("green", 200)],
              desc="Unused volume slots of the least empty volume server. "
                   "At 0 the master cannot grow new volumes."),
 
@@ -442,8 +442,8 @@ def volumes_inventory():
     panels.append(stat("Volumes", Q_VOL_COUNT, grid(0, y, 6, 4), unit="short",
                        desc="Volumes allocated by the master"))
     panels.append(stat("Free volume slots", Q_VOL_FREE, grid(6, y, 6, 4), unit="short",
-                       steps=[("red", None), ("yellow", 1), ("green", 5)],
-                       desc="At 0 the master cannot grow a volume and S3 writes fail"))
+                       steps=[("red", None), ("yellow", 50), ("green", 200)],
+                       desc="At 0 the master cannot grow a volume and S3 writes fail. 1720 slots total, ~5/hour burn, so 50 is about ten hours"))
     panels.append(stat("Fullest volume", Q_VOL_FULLEST, grid(12, y, 6, 4), unit="bytes",
                        steps=[("green", None), ("yellow", 900 * 2**20), ("red", 1000 * 2**20)],
                        desc="Closest to the per-volume limit (1000 MiB in this cluster)"))
