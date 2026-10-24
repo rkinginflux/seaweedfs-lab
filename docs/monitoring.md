@@ -117,6 +117,22 @@ from the cluster secret), then imports both dashboards.
 - **Per collection** — bytes, files, volumes, writable volumes, snapshot table
 - **Growth** — bytes added and files added per interval
 
+### SeaweedFS — Volumes (7 panels)
+
+Requires `detailed_volumes = true` on the `[[inputs.seaweedfs]]` input (it is opt-in
+because it emits one series per volume). It is the dashboard equivalent of the
+volume server's own page at `:8080/ui/index.html`, but with history and with the
+five Telegraf scrapers merged (`max()` per volume):
+
+- **Stat row** — volumes, free volume slots (red at 0), fullest volume in MiB
+  (yellow at 900 MiB, red at the 1000 MiB per-volume limit), largest trash
+  (`deleted_bytes`) awaiting vacuum
+- **Volume inventory** — one row per volume: collection, volume id, size, files,
+  trash, read-only flag, sorted fullest first; the size cell is a gauge that goes
+  yellow/red as a volume approaches the limit
+- **Volume fill over time** — fullest and average volume size against the limit
+- **Files per volume** — file-count growth, which is what drives slot churn
+
 ### Telegraf — All Measurements (48 panels)
 
 One dashboard over **every measurement** in the `telegraf` database (130 when it
@@ -146,6 +162,23 @@ was built), generated from the live schema by
   returns — refreshing afterwards is instant.
 - Growth panels spike right after a collector restart: `non_negative_difference`
   across the gap counts the whole catch-up in one bucket.
+
+## Web UIs
+
+SeaweedFS serves a status page per component. They are read-only, unauthenticated
+and point-in-time, so they are exposed on the lab LAN by a small nginx proxy
+(`helm/seaweedfs-ui-proxy.yaml`) rather than an Ingress: the cluster has no ingress
+controller, and the chart has no NodePort/hostPort knobs.
+
+| UI | LAN URL | What it shows |
+| --- | --- | --- |
+| volume server | http://192.168.0.21:18080/ui/index.html | disk stats, uptime, request sparklines, and the per-volume table (id, collection, data size, files, trash, TTL, read-only, version) |
+| master | http://192.168.0.21:19333/ui/index.html | topology, volume layouts, writables per collection |
+| filer | http://192.168.0.21:18888/ | bucket/object browser for `/buckets/lab` |
+
+No authentication by design — lab only, do not carry this pattern into anything
+reachable from outside the house network. `kubectl -n s3 delete -f
+helm/seaweedfs-ui-proxy.yaml` removes it.
 
 ## Alerting
 

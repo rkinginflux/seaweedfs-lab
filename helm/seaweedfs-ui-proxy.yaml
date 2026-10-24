@@ -1,0 +1,112 @@
+# SeaweedFS web UIs on the lab LAN — no authentication, lab only.
+#
+# The chart's ingress blocks are unusable here because the cluster has no ingress
+# controller (the Ingress objects in influxdb3 point at an nginx class that does not
+# exist), and the chart cannot express NodePort/hostPort. So this is the same
+# pattern as grafana-lan-proxy: one nginx pod pinned to `eruption` with hostPorts.
+#
+#   volume server UI ....  http://192.168.0.21:18080/ui/index.html
+#   master UI ...........  http://192.168.0.21:19333/ui/index.html
+#   filer (bucket/files)    http://192.168.0.21:18888/
+#
+# Remove with: kubectl -n s3 delete -f seaweedfs-ui-proxy.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seaweedfs-ui-proxy
+  namespace: s3
+data:
+  nginx.conf: |
+    # volume server UI (:8080)
+    server {
+      listen 8080;
+      location / {
+        proxy_pass http://seaweedfs-volume.s3.svc.cluster.local:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+      }
+    }
+    # master UI (:9333)
+    server {
+      listen 8081;
+      location / {
+        proxy_pass http://seaweedfs-master.s3.svc.cluster.local:9333;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+      }
+    }
+    # filer: bucket/object browser and S3 on 8333 is not exposed here (:8888)
+    server {
+      listen 8082;
+      client_max_body_size 0;
+      location / {
+        proxy_pass http://seaweedfs-filer.s3.svc.cluster.local:8888;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 300s;
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seaweedfs-ui-proxy
+  namespace: s3
+  labels:
+    app.kubernetes.io/name: seaweedfs-ui-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: seaweedfs-ui-proxy
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: seaweedfs-ui-proxy
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: eruption
+      containers:
+        - name: nginx
+          image: nginxinc/nginx-unprivileged:1.29-alpine
+          ports:
+            - name: volume-ui
+              containerPort: 8080
+              hostPort: 18080
+            - name: master-ui
+              containerPort: 8081
+              hostPort: 19333
+            - name: filer-ui
+              containerPort: 8082
+              hostPort: 18888
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 10
+          volumeMounts:
+            - name: config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: nginx.conf
+      volumes:
+        - name: config
+          configMap:
+            name: seaweedfs-ui-proxy

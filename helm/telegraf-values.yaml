@@ -79,3 +79,6 @@ config:
     - seaweedfs:
         servers:
           - "http://seaweedfs-master.s3.svc.cluster.local:9333"
+        ## per-volume inventory (seaweedfs_volume: size, files, deleted bytes,
+        ## read_only) — the same data the volume server UI shows, kept as history
+        detailed_volumes: true

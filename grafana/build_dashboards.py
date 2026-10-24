@@ -6,8 +6,8 @@ secrets, points a dashboard at the existing InfluxDB datasource (InfluxQL mode)
 and creates/updates two dashboards in a "SeaweedFS" folder.
 
 Usage:
-  kubectl -n grafana port-forward svc/grafana 3000:80 &
-  kubectl -n influxdb3 port-forward svc/influxdb3-querier 8181:8181 &
+  kubectl -n grafana port-forward svc/grafana 13000:80 &
+  kubectl -n influxdb3 port-forward svc/db3-influxdb3-enterprise-querier 18181:8181 &
   python3 build_dashboards.py            # create/update
   python3 build_dashboards.py --verify   # also run every panel query
 
@@ -21,8 +21,8 @@ import subprocess
 import urllib.error
 import urllib.request
 
-GRAFANA = os.environ.get("GRAFANA_URL", "http://127.0.0.1:3000")
-KUBECONFIG = os.environ.get("KUBECONFIG", os.path.expanduser("~/.kube/config"))
+GRAFANA = os.environ.get("GRAFANA_URL", "http://127.0.0.1:13000")
+KUBECONFIG = os.environ.get("KUBECONFIG", "/home/dad/.kube/admin.conf")
 
 
 def secret(ns, name, key):
@@ -63,9 +63,7 @@ def ensure_datasource():
         "name": "InfluxDB3 telegraf",
         "type": "influxdb",
         "access": "proxy",
-        "url": os.environ.get(
-            "INFLUX_URL",
-            "http://influxdb3-querier.influxdb3.svc.cluster.local:8181"),
+        "url": "http://db3-influxdb3-enterprise-querier.influxdb3.svc.cluster.local:8181",
         "isDefault": True,
         "jsonData": {"version": "InfluxQL", "dbName": "telegraf", "httpMode": "POST",
                      "httpHeaderName1": "Authorization"},
@@ -406,6 +404,96 @@ def collections_growth():
     }
 
 
+
+# --- per-volume inventory (requires detailed_volumes = true in the Telegraf input)
+Q_VOL_COUNT = ('SELECT max("volume_count") AS "volumes" FROM "seaweedfs_cluster" '
+               'WHERE $timeFilter')
+Q_VOL_FREE = 'SELECT max("free_volume_slots") AS "free" FROM "seaweedfs_cluster" WHERE $timeFilter'
+Q_VOL_FULLEST = 'SELECT max("size_bytes") AS "fullest" FROM "seaweedfs_volume" WHERE $timeFilter'
+Q_VOL_TRASH = 'SELECT max("deleted_bytes") AS "trash" FROM "seaweedfs_volume" WHERE $timeFilter'
+Q_VOL_TABLE = ('SELECT max("size_bytes") AS "size_bytes", max("file_count") AS "file_count", '
+               'max("deleted_bytes") AS "deleted_bytes", max("read_only") AS "read_only" '
+               'FROM "seaweedfs_volume" WHERE $timeFilter '
+               'GROUP BY "volume_id", "collection"')
+Q_VOL_FILL = ('SELECT max("size_bytes") AS "fullest", mean("size_bytes") AS "mean" '
+              'FROM "seaweedfs_volume" WHERE $timeFilter GROUP BY time($__interval)')
+Q_VOL_FILES = ('SELECT max("file_count") AS "max files", mean("file_count") AS "mean files" '
+               'FROM "seaweedfs_volume" WHERE $timeFilter GROUP BY time($__interval)')
+
+
+def volumes_inventory():
+    """Per-volume inventory — the same data the volume server serves at
+    :8080/ui/index.html, but queryable, with history, and aggregated across the
+    five Telegraf scrapers (max() per volume)."""
+    panels = []
+    y = 0
+    panels.append(stat("Volumes", Q_VOL_COUNT, grid(0, y, 6, 4), unit="short",
+                       desc="Volumes allocated by the master"))
+    panels.append(stat("Free volume slots", Q_VOL_FREE, grid(6, y, 6, 4), unit="short",
+                       steps=[("red", None), ("yellow", 1), ("green", 5)],
+                       desc="At 0 the master cannot grow a volume and S3 writes fail"))
+    panels.append(stat("Fullest volume", Q_VOL_FULLEST, grid(12, y, 6, 4), unit="bytes",
+                       steps=[("green", None), ("yellow", 900 * 2**20), ("red", 1000 * 2**20)],
+                       desc="Closest to the per-volume limit (1000 MiB in this cluster)"))
+    panels.append(stat("Trash awaiting vacuum", Q_VOL_TRASH, grid(18, y, 6, 4), unit="bytes",
+                       desc="Largest deleted_bytes on a single volume; vacuum reclaims it"))
+    y += 4
+
+    panels.append(table(
+        "Volume inventory", Q_VOL_TABLE, grid(0, y, 24, 13),
+        transforms=hide_time({"volume_id": "volume", "collection": "collection",
+                              "size_bytes": "size", "file_count": "files",
+                              "deleted_bytes": "deleted", "read_only": "read-only"}) + [
+            {"id": "sortBy", "options": {"fields": [{"field": "size", "desc": True}],
+                                         "sort": []}},
+        ],
+        overrides=[
+            {"matcher": {"id": "byName", "options": "size"},
+             "properties": [{"id": "unit", "value": "bytes"},
+                            {"id": "custom.cellOptions",
+                             "value": {"type": "gauge", "mode": "gradient"}},
+                            {"id": "thresholds", "value": {"mode": "absolute", "steps": [
+                                {"color": "green", "value": None},
+                                {"color": "yellow", "value": 900 * 2**20},
+                                {"color": "red", "value": 1000 * 2**20}]}}]},
+            {"matcher": {"id": "byName", "options": "deleted"},
+             "properties": [{"id": "unit", "value": "bytes"}]},
+            {"matcher": {"id": "byName", "options": "read-only"},
+             "properties": [{"id": "custom.cellOptions",
+                             "value": {"type": "color-background", "mode": "basic"}},
+                            {"id": "thresholds", "value": {"mode": "absolute", "steps": [
+                                {"color": "green", "value": None},
+                                {"color": "red", "value": 1}]}},
+                            {"id": "mappings", "value": [{"type": "value", "options": {
+                                "true": {"text": "READ-ONLY", "index": 0},
+                                "false": {"text": "writable", "index": 1}}}]}]},
+        ],
+        desc="Per-volume size, files and trash, fullest first. Fed by "
+             "detailed_volumes = true in the Telegraf SeaweedFS input."))
+    y += 13
+
+    panels.append(timeseries("Volume fill over time", [target(Q_VOL_FILL)],
+                             grid(0, y, 12, 8), unit="bytes",
+                             steps=[("green", None), ("red", 1000 * 2**20)],
+                             desc="Fullest and average volume size against the 1000 MiB limit"))
+    panels.append(timeseries("Files per volume", [target(Q_VOL_FILES)],
+                             grid(12, y, 12, 8), unit="short",
+                             desc="File count per volume — what drives slot churn"))
+
+    return {
+        "uid": "seaweedfs-volumes",
+        "title": "SeaweedFS — Volumes",
+        "tags": ["seaweedfs", "telegraf", "volumes", "capacity"],
+        "timezone": "browser",
+        "editable": True,
+        "graphTooltip": 1,
+        "refresh": "1m",
+        "time": {"from": "now-6h", "to": "now"},
+        "schemaVersion": 39,
+        "panels": panels,
+    }
+
+
 # ------------------------------------------------------------------ main
 def upsert(folder_uid, dashboard):
     # classic dashboards carry numeric panel ids; Grafana's schema migration is
@@ -445,6 +533,10 @@ VERIFY_SQL = [
     ("ts col volumes", Q_TS_COL_VOLUMES), ("ts col writable", Q_TS_COL_WRITABLE),
     ("growth bytes", Q_GROWTH_BYTES), ("growth files", Q_GROWTH_FILES),
     ("table collections", Q_TABLE_COLLECTIONS),
+    ("vol count", Q_VOL_COUNT), ("vol free", Q_VOL_FREE),
+    ("vol fullest", Q_VOL_FULLEST),
+    ("vol trash", Q_VOL_TRASH), ("vol table", Q_VOL_TABLE),
+    ("vol fill", Q_VOL_FILL), ("vol files", Q_VOL_FILES),
 ]
 
 
@@ -483,7 +575,7 @@ if __name__ == "__main__":
 
     folder = ensure_folder()
     print("folder:", folder)
-    for build in (cluster_overview, collections_growth):
+    for build in (cluster_overview, collections_growth, volumes_inventory):
         dash = build()
         check_overlaps(dash)
         upsert(folder, dash)
