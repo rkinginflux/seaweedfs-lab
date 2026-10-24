@@ -68,6 +68,9 @@ docs/architecture.md  topology, sizing, persistence model, failure domains
 docs/deployment.md    build the image, install SeaweedFS, roll out Telegraf
 docs/monitoring.md    metrics, dashboards, the Grafana/InfluxDB 3 gotchas
 docs/runbook.md       capacity, vacuum, recovery, day-2 operations
+docs/storage-growth-and-retention.md
+                      the growth investigation, both slot-exhaustion outages,
+                      and the 8h retention policy
 ```
 
 ## Quick start
