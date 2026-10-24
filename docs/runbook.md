@@ -12,13 +12,23 @@ kubectl -n s3 exec deploy/seaweedfs-filer -- \
   wget -qO- http://seaweedfs-master.s3.svc.cluster.local:9333/dir/status
 ```
 
-- **volume slots** — `maxVolumeSlots` − volumes. At 0 the master cannot grow a
-  new volume and writes fail, even with free disk. This is the limit that bit this
-  lab: it reached 35/35 with the disk only 18 % used, and every S3 PUT started
-  returning 500 (`No writable volumes and no free volumes left`), which stalled the
-  InfluxDB 3 ingester. Raising `volume.dataDirs[].maxVolumes` 35 → 46 made the
-  master grow 7 new volumes for the `lab` collection immediately and ingestion
-  resumed on the next flush.
+- **volume slots** — `Max` − used from `/dir/status`. At 0 the master cannot grow a
+  new volume and writes fail, even with free disk. This is the limit that bites
+  this lab: it hit 35/35, then 46/46, both times with the disk under 25 % used.
+  Every S3 PUT starts returning 500 (`No writable volumes and no free volumes
+  left`), which stalls the InfluxDB 3 ingester and takes ingestion down with it —
+  the failure is silent on the dashboards past that point, because the dashboards
+  are fed by the pipeline that just died.
+
+  **Size the limit against volume size, not disk size.** This cluster runs
+  `-volumeSizeLimitMB=1000`, so each slot is 1 GB, not the 30 GB the binary's
+  version string advertises. 46 slots was therefore only a ~46 GB ceiling, and the
+  `lab` collection grew 19.5 GB in 2h20m (~8.4 GB/h), so it filled in three hours.
+  The limit is now 220 (≈220 GB, against 343 GB free on `/dev/sda2`).
+
+  Watch it from the metrics instead of the API: `/dir/status` → `Free` is exported
+  as `free_volume_slots` in `seaweedfs_cluster`, and the `SeaweedFS volume slots
+  low` Grafana alert fires below 5.
 - **disk bytes** — per-disk `used_percent` from `seaweedfs_disk`.
 
 To add capacity:
@@ -112,8 +122,24 @@ Telegraf (discovery) — in that order.
 
 ## Upgrades
 
-- **SeaweedFS**: pin the chart version, read the release notes; volume format
-  changes need a maintenance window and a backup of rule 1 above.
+- **SeaweedFS**: **always pass `--version`**, and only to a version whose image is
+  already in node containerd.
+
+  ```shell
+  helm upgrade seaweedfs seaweedfs/seaweedfs -n s3 \
+    -f ~/lab/seaweedfs-values.yaml --version 4.48.0 --atomic --wait --timeout 4m
+  ```
+
+  Without `--version` Helm pulls the newest chart, which referenced
+  `chrislusf/seaweedfs:4.49` — an image the nodes cannot pull (no registry access),
+  so all six pods went `ImagePullBackOff` and storage was down for eight minutes
+  until `helm rollback seaweedfs <rev>` restored the previous revision. `--atomic`
+  does not save you here: it only rolls back when *Helm* times out, and a stuck
+  `pending-upgrade` blocks the next upgrade until it is resolved.
+
+  Before any upgrade, confirm the image is present: `ctr -n k8s.io images ls` on
+  each node, or import it with `load-image.sh` the way the Telegraf image is
+  handled. Volume format changes still need a maintenance window and a backup.
 - **Telegraf**: rebuild the image with a new tag, `helm upgrade --atomic --wait`;
   `pullPolicy: IfNotPresent` means the tag must change.
 - **Grafana**: dashboards live in Grafana's database. The JSON exports in
