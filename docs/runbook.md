@@ -123,6 +123,45 @@ A silent dashboard is almost always one of: token missing on the datasource, the
 Telegraf pod not on the plugin image, or the volume servers unreachable from
 Telegraf (discovery) — in that order.
 
+## InfluxDB 3 upgrades (db3)
+
+The chart hardcodes the processor's args to `--mode=process,query` and exposes no value
+to change them, but this lab's processor node was first created with **ingest** mode,
+and InfluxDB 3 refuses to start that node in a mode without it:
+
+```text
+Serve command failed: Node with `--node-id db3-influxdb3-enterprise-processor-0` was
+previously started with ingest mode; refusing to start without ingest mode
+```
+
+So a plain `helm upgrade` leaves the processor in `CrashLoopBackOff`. The release also
+needs `--force-conflicts`, because the processor args are owned by `kubectl-edit`.
+
+```shell
+helm upgrade db3 influxdata/influxdb3-enterprise -n influxdb3 --version 0.16.1 \
+  -f ~/lab/influxdb3-enterprise-values.yaml --force-conflicts    # deliberately no --wait
+./helm/patch-db3-processor.sh                                     # restores ingest+webui
+kubectl -n influxdb3 delete pod db3-influxdb3-enterprise-processor-0  # only if it was crashlooping
+```
+
+A StatefulSet will not replace a crashlooping pod to apply a spec change, so the delete
+is what actually makes the patch take effect when the pod is already failing.
+
+Two values in `influxdb3-enterprise-values.yaml` exist for the same reason, and must
+stay until the image tag is semver again:
+
+- `acknowledgeCatalogMigration: true` — the chart derives the product version from the
+  image tag; `portable-v2` is not semver, so it cannot verify the catalog is v3 and
+  fails closed on every upgrade.
+- `acknowledgeUpgrade: "3.12"` — same unknown tag for the 3.12 upgrade boundary. The
+  chart never records the boundary marker for unknown tags ("even when
+  acknowledged"), so this stays permanently rather than being one-time.
+
+`nodeSelector` is intentionally absent from every db3 component: the lab has no
+dedicated db3 nodes, and the ingester/compactor hold no local state (the processor's
+plugins PVC is the exception, and it is bound to its node by `local-path`). A rebuild
+therefore needs no `db3role` node labels.
+
 ## Upgrades
 
 - **SeaweedFS**: **always pass `--version`**, and only to a version whose image is

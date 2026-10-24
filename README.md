@@ -61,8 +61,8 @@ those numbers actually live.
 ## Repository layout
 
 ```
-helm/                 Helm values, plus the Makefile that runs releases with a
-                      pinned chart version and a drift check
+helm/                 Helm values, the Makefile that pins chart versions and checks
+                      drift, and the db3 processor patch script
 telegraf-plugin/      the inputs.seaweedfs plugin (source, tests, fixtures, docs)
 grafana/              dashboard JSON exports + the import script
 docs/architecture.md  topology, sizing, persistence model, failure domains
