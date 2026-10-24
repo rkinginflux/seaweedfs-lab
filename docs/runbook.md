@@ -41,6 +41,9 @@ To add capacity:
 Adding replicas also changes the topology tags in `seaweedfs_volume_server`, so
 dashboards need no change: they group by `server`.
 
+The full measurement of the two slot-exhaustion incidents, the growth rate and the
+8 h retention policy is in [storage-growth-and-retention.md](storage-growth-and-retention.md).
+
 ## Vacuum
 
 `seaweedfs_collection.deleted_bytes` above zero means deleted needles still occupy
