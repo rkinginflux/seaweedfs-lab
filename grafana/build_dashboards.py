@@ -181,9 +181,9 @@ def table(title, sql, pos, transforms=None, overrides=None, desc=""):
     }
 
 
-def row(title, y):
-    return {"type": "row", "title": title, "collapsed": False, "gridPos": grid(0, y, 24, 1),
-            "panels": []}
+def row(title, y, desc=""):
+    return {"type": "row", "title": title, "collapsed": False, "description": desc,
+            "gridPos": grid(0, y, 24, 1), "panels": []}
 
 
 def hide_time(rename=None):
@@ -272,7 +272,8 @@ def cluster_overview():
              desc="Unused volume slots of the least empty volume server. "
                   "At 0 the master cannot grow new volumes."),
 
-        row("Capacity", 5),
+        row("Capacity", 5, desc="Disk, volume-slot and per-collection capacity for the "
+                                "SeaweedFS cluster."),
         timeseries("Disk usage over time", [
             target(Q_TS_DISK_USED, ref="A"),
             target(Q_TS_DISK_FREE.replace("min(\"free_bytes\")", "min(\"free_bytes\")"), ref="B"),
@@ -293,7 +294,8 @@ def cluster_overview():
                  renames=[COLLECTION_RE],
                  desc="Physical bytes per collection (replicas counted)."),
 
-        row("Health", 21),
+        row("Health", 21, desc="Leader election, read-only volumes, reclaimable bytes and scraper "
+                               "freshness."),
         stat("Leader samples", Q_LEADER, grid(0, 22, 6, 4), decimals=0, graph="none",
              steps=[("red", None), ("green", 1)],
              desc="Samples in which the master reported itself as leader. Must keep "
@@ -350,7 +352,7 @@ def collections_growth():
              steps=[("red", None), ("yellow", 1), ("green", 3)],
              desc="Volumes the master can still write to. Zero means the next write fails."),
 
-        row("Per collection", 5),
+        row("Per collection", 5, desc="Size, file and volume counts broken out per collection."),
         timeseries("Stored bytes per collection", [target(Q_TS_COL_SIZE)], grid(0, 6, 12, 8),
                    unit="bytes", renames=[COLLECTION_RE],
                    desc="Physical size per collection over time."),
@@ -358,9 +360,14 @@ def collections_growth():
                    unit="short", renames=[COLLECTION_RE],
                    desc="Object count per collection over time."),
         timeseries("Volumes per collection", [target(Q_TS_COL_VOLUMES)], grid(0, 14, 8, 7),
-                   unit="none", renames=[COLLECTION_RE]),
+                   unit="none", renames=[COLLECTION_RE],
+                   desc="Physical volume count per collection over time. Replicas are counted "
+                        "separately, so this tracks allocation on disk rather than logical data "
+                        "size."),
         timeseries("Writable volumes per collection", [target(Q_TS_COL_WRITABLE)], grid(8, 14, 8, 7),
-                   unit="none", renames=[COLLECTION_RE]),
+                   unit="none", renames=[COLLECTION_RE],
+                   desc="Volumes per collection the master can still write to. A collection that "
+                        "reaches 0 has no writable volume left and its next write fails."),
         table("Collection snapshot", Q_TABLE_COLLECTIONS, grid(16, 14, 8, 7),
               transforms=hide_time({"collection": "Collection", "size": "Size",
                                     "files": "Files", "volumes": "Volumes",
@@ -369,7 +376,8 @@ def collections_growth():
                           "properties": [{"id": "unit", "value": "bytes"}]}],
               desc="Latest values per collection."),
 
-        row("Growth", 21),
+        row("Growth", 21, desc="Interval-over-interval deltas — how fast bytes and files are "
+                              "arriving."),
         timeseries("Bytes added per interval", [target(Q_GROWTH_BYTES)], grid(0, 22, 12, 8),
                    unit="bytes", renames=[COLLECTION_RE], desc="Non-negative difference of the collection size between "
                                       "buckets — the ingestion rate in bytes."),
@@ -387,7 +395,11 @@ def collections_growth():
              "occupying disk — run `weed shell` → `volume.vacuum` during a quiet window."
          )},
          "fieldConfig": {"defaults": {}, "overrides": []},
-         "targets": [], "description": "", "datasource": DS,
+         "targets": [], "description": (
+             "How to read this dashboard: the stat cards are latest values across all "
+             "collections, the per-collection series plot each collection separately, and the "
+             "growth panels are non-negative differences — a shrink (delete or vacuum) is "
+             "clamped to 0, not shown as negative growth."), "datasource": DS,
          "pluginVersion": "13.2.4"},
     ]
     return {

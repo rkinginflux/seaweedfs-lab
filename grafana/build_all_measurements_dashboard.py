@@ -331,6 +331,209 @@ UNIT_LABEL = {
 }
 
 
+# ------------------------------------------------------------- descriptions
+# Prose for each generated panel, keyed by the exact title build() produces.
+# The fallback is the machine listing of measurement names, so a panel added to
+# a new group still ships with *something* truthful.
+GROUP_DESCRIPTIONS = {
+    "Host / OS": "Telegraf's host inputs: cpu, mem, swap, disk, diskio, net, kernel, "
+                 "processes and system.",
+    "SeaweedFS": "SeaweedFS input from this repo's plugin: cluster, disk, collection, volume "
+                 "and volume-server measurements.",
+    "Telegraf": "Telegraf internal_* inputs — the agent's own health: throughput, heap, gather "
+                "time and buffer pressure.",
+    "Kubernetes": "kubernetes_* measurements from Telegraf's kube_inventory input.",
+    "InfluxDB 3 — ingest & writes": "Counters and gauges from the ingest and write path of "
+                                    "InfluxDB 3 Enterprise.",
+    "InfluxDB 3 — WAL & snapshots": "WAL flush and snapshot creation on the ingest nodes.",
+    "Query path": "HTTP request handling and the query log: plan → execute → ingester → result.",
+    "Memory & process": "Allocator pools and process identity.",
+    "Async semaphore": "IOx async semaphore that caps query concurrency (holders and permits).",
+    "Object store": "Object-store (S3) traffic between InfluxDB 3 and SeaweedFS.",
+    "Tokio & failures": "Rust runtime health: queues, workers, panics and hang counters.",
+}
+
+PANEL_DESCRIPTIONS = {
+    # ---- host / os
+    "Host / OS — network throughput":
+        "net: rx/tx in bits/s, summed across interfaces (bytes_recv/bytes_sent × 8 as a "
+        "non-negative rate).",
+    "Host / OS — rates":
+        "diskio: read and write IOPS summed across devices. kernel: context switches, "
+        "interrupts and forks per second.",
+    "Host / OS — utilisation":
+        "cpu: busy = 100 − usage_idle on cpu-total. disk: space and inode used_percent per "
+        "mount. mem / swap: used_percent per host.",
+    "Host / OS — counts":
+        "processes: running, blocked, zombie and total counts. system: load1/5/15 and uptime.",
+    # ---- seaweedfs
+    "SeaweedFS — memory & storage":
+        "seaweedfs_collection: size_bytes and file_count per collection. seaweedfs_disk: "
+        "used_percent and free_bytes per volume-server data path.",
+    "SeaweedFS — counts":
+        "seaweedfs_cluster: volumes, total slots, free slots and server count. seaweedfs_master: "
+        "highest volume ID assigned. seaweedfs_volume_server: per-server volumes and free slots.",
+    # ---- telegraf internal
+    "Telegraf — memory & storage":
+        "internal_memstats: heap in use, heap reserved from the OS, and cumulative allocations.",
+    "Telegraf — rates":
+        "internal_agent: metrics gathered, written and dropped, plus write errors per second. "
+        "internal_gather: gather duration per input. internal_process: agent CPU and RSS. "
+        "internal_prometheus: scrape connection state (1 = connected). internal_statsd: pending "
+        "StatsD messages.",
+    "Telegraf — utilisation":
+        "internal_write: output buffer fill (buffer_size / buffer_limit as %) and the "
+        "metrics-written rate. Buffer % pinned near 100 means the output cannot keep up.",
+    # ---- kubernetes
+    "Kubernetes":
+        "kubernetes_endpoint: endpoints per namespace. kubernetes_node: ready (1 = Ready). "
+        "kubernetes_persistentvolume: PVs by phase. kubernetes_pod_container: containers per "
+        "namespace. kubernetes_service: services per namespace.",
+    # ---- ingest & writes
+    "InfluxDB 3 — ingest & writes — memory & storage":
+        "influxdb3_file_cache_fetched_bytes_total: file-cache fetch rate. file_cache_size_bytes: "
+        "cache size. ingest_lp_bytes_received_total: line-protocol bytes received per second — "
+        "the true inbound rate. ingest_pre_snapshot_buffer_bytes and "
+        "ingest_pre_wal_flush_buffer_bytes: bytes buffered before snapshot and WAL flush. "
+        "write_bytes_total: bytes written per second.",
+    "InfluxDB 3 — ingest & writes — rates":
+        "file_cache_access_total: cache accesses per second. ingest_writes_total: ingest write "
+        "operations per second. node_identity_lease_renewal_failures_total and "
+        "..._renewals_after_window_closed_total: catalog lease renewal failures — anything "
+        "non-zero means nodes are losing their lease.",
+    "InfluxDB 3 — ingest & writes — durations":
+        "lease_clock_offset_seconds: measured clock offset used by the identity lease. Large or "
+        "oscillating values cause lease churn.",
+    "InfluxDB 3 — ingest & writes — counts (1)":
+        "file_cache_entries_count: cached file entries. ingest_pre_snapshot_buffer_rows/_tables "
+        "and ingest_pre_wal_flush_buffer_rows/_tables: rows and tables buffered before snapshot "
+        "and WAL flush — sustained growth means the flush cannot keep up. "
+        "ingest_write_concurrency: in-flight ingest writes.",
+    "InfluxDB 3 — ingest & writes — counts (2)":
+        "node_identity_lease_term: current lease term, incremented on every failover. "
+        "write_lines_total rate: line-protocol lines written per second.",
+    # ---- WAL & snapshots
+    "InfluxDB 3 — WAL & snapshots — memory & storage":
+        "snapshot_bytes_written_total: bytes per second written into snapshot files. "
+        "wal_bytes_flushed_total: bytes per second flushed out of the WAL.",
+    "InfluxDB 3 — WAL & snapshots — rates":
+        "snapshot_total: snapshots created per second. wal_flush_total: WAL flush operations "
+        "per second.",
+    "InfluxDB 3 — WAL & snapshots — durations":
+        "Average snapshot construction time and average WAL flush latency (derivative of sum ÷ "
+        "derivative of count).",
+    "InfluxDB 3 — WAL & snapshots — counts (1)":
+        "snapshot_files_written_total, snapshot_rows_written_total and "
+        "snapshot_rows_by_window_age_total: per-second snapshot write volume. snapshot_windows: "
+        "average windows per snapshot. snapshot_windows_seen_24h: windows observed in the last "
+        "24 h. wal_flush_concurrency: concurrent WAL flushes.",
+    "InfluxDB 3 — WAL & snapshots — counts (2)":
+        "wal_rows_flushed_total and wal_tables_flushed_total per second — volume and table "
+        "fan-out of WAL flushing.",
+    # ---- query path
+    "Query path — memory & storage":
+        "http_response_body_size_bytes: average response body size (derivative of sum ÷ "
+        "derivative of count).",
+    "Query path — rates":
+        "influxdb_iox_query_log_phase_entered_total: query phase transitions per second. "
+        "query_datafusion_query_execution_ooms_total: queries killed by DataFusion memory "
+        "exhaustion — must stay at 0.",
+    "Query path — request rates":
+        "http_requests_total per second — total API request rate, writes and queries together.",
+    "Query path — durations (1)":
+        "Average HTTP request duration plus query-log phase timings: compute, end-to-end, "
+        "execute, and ingester latency to data / to plan.",
+    "Query path — durations (2)":
+        "Plan-phase timings: logical plan, permit wait, physical plan and total plan duration, "
+        "averaged per query.",
+    "Query path — counts (1)":
+        "Average per query: deduplicated parquet files and partitions, ingester partition "
+        "count, ingester response rows and size, and peak memory.",
+    "Query path — counts (2)":
+        "Average per query: rows returned, parquet files read, partitions scanned. "
+        "phase_current: queries currently inside a phase.",
+    # ---- memory & process
+    "Memory & process — memory & storage":
+        "datafusion_mem_pool_bytes: memory held by the DataFusion pool. jemalloc_memstats_bytes: "
+        "allocator statistics.",
+    "Memory & process — durations":
+        "process_start_time_seconds shown as a timestamp — a jump means the process restarted.",
+    # ---- async semaphore
+    "Async semaphore — rates":
+        "Holders and permits cancelled while pending, per second — work that gave up waiting "
+        "for a permit. Sustained non-zero means the semaphore is the bottleneck.",
+    "Async semaphore — durations":
+        "Average semaphore acquire time and average first-poll wait — queueing delay in front "
+        "of the permit.",
+    "Async semaphore — counts (1)":
+        "Holders and permits acquired, current and high-water (…_hwm = peak since process "
+        "start).",
+    "Async semaphore — counts (2)":
+        "Permits pending now, their high-water mark, and the total permits configured.",
+    # ---- object store
+    "Object store — memory & storage":
+        "object_store_transfer_bytes_hist: average bytes per transfer. transfer_bytes_total: "
+        "bytes per second.",
+    "Object store — durations":
+        "Average object-store operation duration, time to response headers, and time to first "
+        "byte.",
+    "Object store — counts":
+        "Average objects per transfer and transfer operations per second.",
+    # ---- tokio
+    "Tokio & failures — rates (1)":
+        "thread_panic_count_total: panics — must stay at 0; any growth is a bug. Then budget "
+        "forced yields, IO-driver fd register/deregister/ready events, and remote schedules "
+        "per second.",
+    "Tokio & failures — rates (2)":
+        "tokio_watchdog_hangs_total: must stay 0. Also worker local schedules, noop polls, "
+        "overflows, parks and polls per second.",
+    "Tokio & failures — rates (3)":
+        "Worker steal events and steal operations per second.",
+    "Tokio & failures — durations":
+        "Average watchdog response time, mean poll time per task, and the rate of total worker "
+        "busy time — i.e. how much worker capacity is in use.",
+    "Tokio & failures — counts (1)":
+        "Runtime queue depths (blocking and global), alive tasks, and blocking / worker / idle "
+        "thread counts.",
+    "Tokio & failures — counts (2)":
+        "Per-worker local queue depth.",
+}
+
+
+# Panel titles gain a " (N)" suffix when a family needs more than one panel.
+# Chunking shifts as measurements appear, so those families get one prose block
+# keyed by the base title, never per chunk.
+FAMILY_DESCRIPTIONS = {
+    "InfluxDB 3 — ingest & writes — counts":
+        "Gauges and counters from the ingest/write path: file-cache entries, rows and tables "
+        "buffered before snapshot and WAL flush, in-flight write concurrency, node identity "
+        "lease term, and the line write rate. Buffered rows climbing while writes continue "
+        "means the snapshot or WAL flush cannot keep up.",
+    "InfluxDB 3 — WAL & snapshots — counts":
+        "Per-second snapshot and WAL flushing volume: files and rows written, rows by window "
+        "age, average windows per snapshot, windows seen in the last 24 h, WAL flush "
+        "concurrency, and rows/tables flushed out of the WAL.",
+    "Query path — durations":
+        "Average query timings across the request and query-log phases: HTTP request, compute, "
+        "end-to-end, execute, ingester latency to data and to plan, logical/physical/total "
+        "plan, and permit wait.",
+    "Query path — counts":
+        "Average per query: deduplicated parquet files and partitions, ingester partition "
+        "count, ingester response rows and size, peak memory, rows returned, parquet files "
+        "read, partitions scanned, plus the current query phase.",
+    "Async semaphore — counts":
+        "Semaphore occupancy: holders and permits acquired, pending, and their high-water "
+        "marks (…_hwm = peak since process start), plus the total permits configured.",
+    "Tokio & failures — rates":
+        "Runtime event rates: panics (must be 0), watchdog hangs (must be 0), budget forced "
+        "yields, IO-driver fd registration and readiness, remote and local schedules, noop "
+        "polls, overflow, park, poll and steal counters.",
+    "Tokio & failures — counts":
+        "Runtime occupancy: blocking and global queue depth, alive tasks, worker / blocking / "
+        "idle thread counts, and per-worker local queue depth.",
+}
+
+
 def thresholds(unit: str):
     if unit == "percent":
         return {"mode": "absolute",
@@ -393,8 +596,8 @@ def stat_panel(title, query, unit, grid_pos, steps=None, desc=""):
 EXPANDED_GROUPS = {"Host / OS", "SeaweedFS"}
 
 
-def row(title, y, collapsed=False):
-    return {"type": "row", "title": title, "collapsed": collapsed,
+def row(title, y, collapsed=False, desc=""):
+    return {"type": "row", "title": title, "collapsed": collapsed, "description": desc,
             "gridPos": {"x": 0, "y": y, "w": 24, "h": 1}, "panels": []}
 
 
@@ -469,7 +672,13 @@ def build(schema, tags, fields):
                     title += f" — {UNIT_LABEL.get(unit, unit)}"
                 if len(targets) > 6:
                     title += f" ({chunk_start // 6 + 1})"
-                desc = "; ".join(f"{t['measurement']}: {t['desc']}" for t in chunk)
+                base = re.sub(r" \(\d+\)$", "", title)
+                if base != title and base in FAMILY_DESCRIPTIONS:
+                    desc = FAMILY_DESCRIPTIONS[base]
+                else:
+                    desc = PANEL_DESCRIPTIONS.get(
+                        title,
+                        "; ".join(f"{t['measurement']}: {t['desc']}" for t in chunk))
                 group_panels.append(timeseries_panel(
                     title, chunk, desc, unit, {"x": col, "y": row_y, "w": 12, "h": 7}))
                 max_h = max(max_h, 7)
@@ -477,7 +686,8 @@ def build(schema, tags, fields):
                 if col >= 24:
                     col, row_y = 0, row_y + max_h
                     max_h = 0
-        row_panel = row(group, y, collapsed=collapsed)
+        row_panel = row(group, y, collapsed=collapsed,
+                        desc=GROUP_DESCRIPTIONS.get(group, ""))
         if collapsed:
             # nested panels are only laid out/queried when the row is opened
             row_panel["panels"] = group_panels
