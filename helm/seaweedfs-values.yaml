@@ -42,16 +42,26 @@ filer:
   tolerations: "- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"seaweedfs\"\n  effect: \"NoSchedule\"\n"
 
 volume:
-  # One volume server, 46 volume slots, 50Gi claim. The claim is NOT a filesystem
+  # One volume server, 220 volume slots, 50Gi claim. The claim is NOT a filesystem
   # quota: SeaweedFS stops writing when maxVolumes is reached, not at the PVC size.
-  # 46 = the 35 volumes that existed when the cluster hit 35/35 + 11 more, matching
-  # the ~354 GB free on the node at 30 GB per volume. Raise only with real disk.
+  #
+  # Size the slots against the VOLUME size, not the disk. This chart sets
+  # volumeSizeLimitMB: 1000, so each slot is 1 GB even though the weed version
+  # string advertises 30 GB. Two outages came from getting this wrong:
+  #   35/35 slots  -> S3 PUTs 500, ingester stalled
+  #   46/46 slots  -> same failure again, three hours later, at ~8 GB/h growth
+  # 220 slots = a 220 GB ceiling, which fits the ~343 GB free on the volume node.
+  #
+  # If slot churn becomes a problem again, raise volumeSizeLimitMB rather than
+  # maxVolumes: 4000 MB volumes would burn a quarter of the ids for the same data.
+  # Watch free slots as `free_volume_slots` (seaweedfs_cluster) — it is also what
+  # the "SeaweedFS volume slots low" alert fires on.
   dataDirs:
     - name: data1
       type: persistentVolumeClaim
       storageClass: local-path
       size: 50Gi
-      maxVolumes: 46
+      maxVolumes: 220
   tolerations: "- key: \"dedicated\"\n  operator: \"Equal\"\n  value: \"seaweedfs\"\n  effect: \"NoSchedule\"\n"
 
 admin:
