@@ -97,8 +97,12 @@ Both open items are now closed:
    a dead disk should not block the node's boot — the volume pod's initContainer then fails
    closed instead.
 
-Still worth doing at the next quiet moment: raise `volumeSizeLimitMB` (e.g. 4000) so the same
-data uses a quarter of the volume ids, which cuts master and vacuum churn for free.
+3. **`volumeSizeLimitMB` raised to 4000** (26 Oct, was the chart default 1000). Within a
+   minute the master re-marked every full 1 GB volume writable — the pool went 7 → 455 — and
+   new volume creation stopped entirely: at 1 GB the cluster was minting ~5 volumes/hour, at
+   4 GB the same data needs a quarter of the ids. Volumes already written keep filling to
+   4 GB, so this needed no migration; the slot budget (1720) now covers ~6.7 TB instead of
+   ~1.7 TB and the disk is the binding limit again.
 
 ---
 

@@ -350,7 +350,7 @@
         "type": "influxdb",
         "uid": "bg24j3hn03cw0d"
       },
-      "description": "Free volume slots across both data dirs (1720 total). At 0 the master cannot grow a volume and S3 writes fail; ~5 volumes/hour burn makes 50 about ten hours",
+      "description": "Free volume slots across both data dirs (1720 total, 4 GB each). At 0 the master cannot grow a volume and S3 writes fail; ~1.7 volumes/hour burn makes 50 about a day",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1865,7 +1865,7 @@
                 "max"
               ],
               "displayMode": "table",
-              "placement": "right",
+              "placement": "bottom",
               "showLegend": true
             },
             "tooltip": {
@@ -1905,9 +1905,21 @@
               },
               "intervalMs": 60000,
               "maxDataPoints": 300,
-              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_write_lines_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_write_lines_rejected_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
               "rawQuery": true,
               "refId": "C",
+              "resultFormat": "time_series"
+            },
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "bg24j3hn03cw0d"
+              },
+              "intervalMs": 60000,
+              "maxDataPoints": 300,
+              "query": "SELECT non_negative_derivative(max(\"counter\"), 1s) AS \"rate\" FROM \"influxdb3_write_lines_total\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "D",
               "resultFormat": "time_series"
             }
           ],

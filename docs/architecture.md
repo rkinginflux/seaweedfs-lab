@@ -33,7 +33,7 @@ worker   2 replicas  jobType: vacuum,volume_balance
 
 ### What "volume slots" means
 
-This master sets `volumeSizeLimitMB=1000`, so a slot represents roughly 1 GB,
+This master sets `volumeSizeLimitMB=4000`, so a slot represents roughly 4 GB,
 not the 30 GB shown in the binary's version banner. `maxVolumes` is how many
 volumes each data directory may hold; when the slots run out the master cannot grow a new volume
 **regardless of free disk space**, and any S3 write that needs a new volume fails

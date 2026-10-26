@@ -12,6 +12,24 @@ namespace:
   - name: s3
 
 master:
+  # Volume size cap, applied by the master (the chart passes -volumeSizeLimitMB to the
+  # master only; volume servers keep their own 30 GB default, so this is the binding limit).
+  #
+  # 1000 -> 4000: volume ids are the scarce resource in this lab, not disk. At 1 GB a slot
+  # held 1 GB, so the 7-day retention (~1.15 TB at 6.8 GB/h) needed ~1150 of the 1720 slots,
+  # and every new volume cost the master a slot and the vacuum worker a rewrite. At 4 GB the
+  # same data is ~290 volumes: a quarter of the ids, a quarter of the metadata churn, and the
+  # disk becomes the binding limit instead of the slot count (220 x 4 GB = 880 GB on data1,
+  # 1500 x 4 GB = 6 TB on /misc, both larger than the disks they sit on).
+  #
+  # Only volumes created after this change get 4 GB. Volumes already full at 1 GB stay
+  # read-only; the master hands out new 4 GB ones as the writable pool drains, so the switch
+  # is gradual and needs no migration.
+  #
+  # Trade-off: a vacuum or compaction job on a 4 GB volume moves 4x the data, and partially
+  # deleted volumes only reclaim space when they are rewritten. At this scale that is a
+  # minute of worker time, not a capacity problem.
+  volumeSizeLimitMB: 4000
   enabled: true
   data:
     type: persistentVolumeClaim

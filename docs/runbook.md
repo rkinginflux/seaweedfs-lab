@@ -21,9 +21,10 @@ kubectl -n s3 exec seaweedfs-filer-0 -- \
   are fed by the pipeline that just died.
 
   **Size the limit against volume size, not disk size.** This cluster runs
-  `-volumeSizeLimitMB=1000`, so each slot is 1 GB, not the 30 GB the binary's
-  version string advertises. 46 slots was therefore only a ~46 GB ceiling, and the
-  `lab` collection grew 19.5 GB in 2h20m (~8.4 GB/h), so it filled in three hours.
+  `-volumeSizeLimitMB=4000` (it was 1000 until 2026-10-26), so each slot is 4 GB. The 1 GB
+  era is what caused the outages: 46 slots was a ~46 GB ceiling, and the `lab` collection
+  grew 19.5 GB in 2h20m (~8.4 GB/h), so it filled in three hours. At 4 GB the same data needs
+  a quarter of the ids, which is why the slot count stopped being the binding limit.
   data1 now has 220 slots and getup's `/misc` disk adds 1500, for 1720 total.
   Slot capacity is not reserved disk space; monitor both filesystems.
 
@@ -37,7 +38,12 @@ To add capacity:
 
 1. more `dataDirs` on the volume server (PVC or hostPath + `maxVolumes`), or
 2. another volume server replica (`volume.replicas`, separate `dataDirs`), or
-3. larger volumes (`-volumeSizeLimitMB` on the master; the current 1000 MB
+3. larger volumes (`-volumeSizeLimitMB` on the master; raised from 1000 MB to 4000 MB
+   on 2026-10-26). The master re-marked every previously-full 1 GB volume as writable within
+   a minute (7 → 455 writable), and since SeaweedFS spreads new needles across the whole
+   writable pool, no new volume has been created since: at 1 GB the cluster minted ~5
+   volumes/hour, at 4 GB those same volumes have ~2.9 GB of headroom each (~1.3 TB of
+   absorption) before any new id is needed. The current 4000 MB
    limit makes slot exhaustion outrun disk exhaustion).
 
 Adding replicas also changes the topology tags in `seaweedfs_volume_server`, so

@@ -684,8 +684,8 @@ def build(schema, tags, fields):
         ("SeaweedFS slots free", 'SELECT max("free_volume_slots") AS "free" FROM "seaweedfs_cluster" '
                                  'WHERE $timeFilter GROUP BY time($__interval)',
          "short", [("red", None), ("yellow", 50), ("green", 200)],
-         "Free volume slots across both data dirs (1720 total). At 0 the master cannot "
-         "grow a volume and S3 writes fail; ~5 volumes/hour burn makes 50 about ten hours"),
+         "Free volume slots across both data dirs (1720 total, 4 GB each). At 0 the master "
+         "cannot grow a volume and S3 writes fail; ~1.7 volumes/hour burn makes 50 about a day"),
         ("Telegraf write errors", 'SELECT non_negative_derivative(max("write_errors"), 1s) AS "errors" '
                                   'FROM "internal_agent" WHERE $timeFilter GROUP BY time($__interval)',
          "ops", [("green", None), ("red", 0.0001)], "Output write error rate"),

@@ -141,7 +141,7 @@ def ensure_rule(folder: str):
                 "and S3 PUTs fail.\n\n"
                 "Fix: raise maxVolumes on the data dir that has room "
                 "(volume.dataDirs[].maxVolumes in the seaweedfs helm values). Each slot "
-                "is 1 GB here because volumeSizeLimitMB is 1000, so N slots need ~N GB "
+                "is 4 GB here because volumeSizeLimitMB is 4000, so N slots need ~4N GB "
                 "free on that disk. Then helm upgrade seaweedfs --atomic --wait.\n\n"
                 "Runbook: https://github.com/rkinginflux/seaweedfs-lab/blob/main/docs/runbook.md"
             ) % THRESHOLD,

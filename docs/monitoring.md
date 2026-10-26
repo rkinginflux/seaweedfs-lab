@@ -224,12 +224,13 @@ Details:
   time(1m) fill(previous)` over a 15m window), so it does not depend on a
   dashboard being open.
 - The annotation carries the live value (`{{ $values.B }}`) plus the fix — add slots to
-  the data dir that has room (`volume.dataDirs[].maxVolumes`; each slot is 1 GB because
-  `volumeSizeLimitMB` is 1000) and `helm upgrade seaweedfs --atomic --wait`. The lab now
-  has two dirs, so `Max` in `/dir/status` is the sum: 1720.
-- The threshold is **50**, not 5. It was sized for 220 slots; at 1720 slots with the
-  observed ~5 volumes/hour burn, 5 slots was about an hour of warning and 50 is roughly
-  ten. The dashboards use the same 50/200 pair (red below 50, green from 200).
+  the data dir that has room (`volume.dataDirs[].maxVolumes`; each slot is 4 GB since
+  `volumeSizeLimitMB` went to 4000 on 2026-10-26, 1 GB before that) and
+  `helm upgrade seaweedfs --wait`. The lab has two dirs, so `Max` in `/dir/status` is their
+  sum: 1720.
+- The threshold is **50**, not 5. At 1 GB volumes the burn was ~5 volumes/hour, so 5 slots
+  was about an hour of warning; at 4 GB volumes it is ~1.7/hour, which makes 50 slots roughly
+  a day and 200 slots several days. The dashboards use the same 50/200 pair.
 - The contact point reuses the Hermes Telegram bot (token read from
   `~/.hermes/.env`, never committed); the default notification policy routes to
   it with a 30s group wait and a 12h repeat interval.

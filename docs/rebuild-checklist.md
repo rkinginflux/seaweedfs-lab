@@ -84,8 +84,10 @@ kubectl -n s3 exec seaweedfs-master-0 -- wget -qO- http://127.0.0.1:9333/dir/sta
 
 Expect `Max: 1720` (220 data1 + 1500 misc). `Max` minus volumes in use is the
 free-slot count. The pinned chart defaults the master to
-`volumeSizeLimitMB: 1000`, so a slot is **1 GB** — `maxVolumes` is a GB ceiling, not a
-count of 30 GB volumes.
+`volumeSizeLimitMB` is set to **4000** in the values (it defaulted to 1000 until
+2026-10-26), so a slot is **4 GB** — `maxVolumes` is a capacity ceiling, not a count of 30 GB
+volumes. At 1000 MB the same data consumed four times the ids, which is what made slots, not
+disk, the limit that broke this lab twice.
 
 The budget is per data dir (`data1` 220, `misc` 1500), which is why `Max` is 1720 rather
 than 220; the preflight above covers the disk, the PV binding and the startup guard. At

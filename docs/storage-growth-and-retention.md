@@ -10,7 +10,9 @@ queries and commands needed to reproduce it.
   **5–6 GB/h** with no retention in place. That is far more than the Telegraf workload
   itself weighs, so most of it is object-store write amplification (WAL, snapshots,
   compaction output), not raw metric data.
-- SeaweedFS volumes in this chart are **1 GB each** (`volumeSizeLimitMB: 1000`), so
+- SeaweedFS volumes were **1 GB each** (`volumeSizeLimitMB: 1000`) for the whole incident;
+  they are **4 GB** since 2026-10-26, so the slot arithmetic below describes the 1 GB era. The
+  original numbers stand as history: with
   `maxVolumes` is a **GB ceiling**, not a count of large volumes. The cluster hit
   35/35, was raised to 46, and hit **46/46 three hours later** — each time landing on
   zero writable volumes for collection `lab`.
@@ -148,9 +150,11 @@ retention problem.
 - **Dashboard ranges.** `SeaweedFS — Collections & Growth` defaults to 24 h, so with
   8 h retention two thirds of every panel is legitimately empty. 6 h is the sane
   default now.
-- **Slot sizing.** 220 slots is 220 GB of 1 GB volumes. If churn returns, raise
-  `volumeSizeLimitMB` rather than `maxVolumes` — 4000 MB volumes would consume a
-  quarter of the ids for the same data.
+- **Slot sizing.** 220 slots was 220 GB of 1 GB volumes. `volumeSizeLimitMB` was raised to
+  4000 on 2026-10-26, so the same budget now covers 4x the data and the 7-day retention
+  (~1.15 TB) needs ~290 volumes instead of ~1150. The master re-marked the previously-full
+  1 GB volumes writable within a minute of the change, so no migration was needed: they keep
+  filling to 4 GB.
 
 ## Reproducing the measurements
 
