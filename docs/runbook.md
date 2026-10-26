@@ -44,7 +44,19 @@ Adding replicas also changes the topology tags in `seaweedfs_volume_server`, so
 dashboards need no change: they group by `server`.
 
 The full measurement of the two slot-exhaustion incidents, the growth rate and the
-8 h retention policy is in [storage-growth-and-retention.md](storage-growth-and-retention.md).
+The **7-day** retention policy on the `telegraf` database is what bounds growth; the
+measurements behind the number are in
+[storage-growth-and-retention.md](storage-growth-and-retention.md). Seven days is ~1.15 TB at
+the observed 6.8 GB/h, i.e. ~1150 of the 1720 volume slots with roughly 570 free — enough
+margin for compaction churn without leaving the slot budget idle. Retention is enforced at
+the ingest path as well as by the sweeper: a write older than the cutoff is rejected with
+`write timestamp ... is older than the retention period cutoff ...`, so back-filling into a
+windowed database fails loudly rather than silently.
+
+The `/misc` data disk is mounted from `/etc/fstab` by UUID
+(`UUID=1cb2cc54-… /misc ext4 defaults,nofail,x-systemd.device-timeout=30s 0 2`), and
+`findmnt --verify` reports no errors. `nofail` matters: if the disk dies the node still boots
+and the volume pod then refuses to start on its guard, which is the failure you want.
 
 ## Additional /misc disk on getup
 

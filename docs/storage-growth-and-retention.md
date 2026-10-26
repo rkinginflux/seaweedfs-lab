@@ -23,10 +23,14 @@ queries and commands needed to reproduce it.
 to 50 for the larger slot budget) — it fired at 23:30 with
   4 free, 24 minutes before writes failed.
 - The `telegraf` database was given an **8-hour retention policy** on 2026-10-24 03:00 UTC
-  and verified live (oldest point exactly 8 h behind). It has since been removed: the lab
-  added a second 1.8 TB disk (`misc`) and raised the slot budget to 1720, and the oldest
-  point is now ~18 h behind. At the measured ~6 GB/h that is roughly twelve days of
-  headroom on 1.7 TB — the window is still the cheap insurance, not a permanent fix.
+  and verified live (oldest point exactly 8 h behind). It was removed later that day when
+  the second 1.8 TB disk (`misc`) arrived, which turned a bounded system into a 7-day timer:
+  the bucket ran from 30 GB to 464 GB over the following weekend at ~6.8 GB/h.
+- **7 days since 2026-10-26**, chosen from the measured rate rather than by feel: 6.8 GB/h ×
+  168 h ≈ 1.15 TB steady state, which fits the 1720-slot budget (~1150 used, ~570 free for
+  churn) and the 1.6 TB free on `/misc`. Enforcement was verified on a throwaway 1 h
+  database: the ingester rejected a write older than the cutoff with
+  `write timestamp ... is older than the retention period cutoff ...`.
 
 ## Measured growth
 

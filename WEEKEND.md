@@ -77,24 +77,28 @@ banner advertises; `maxVolumes` is therefore a **GB ceiling**, not a count of la
 - No pod restarts in `s3` or `influxdb3` after Friday's work; the db3 processor shows 2
   restarts, both from the deliberate mode patches.
 
-## Headroom, and the decision that is still open
+## Headroom — and what was done about it on the Monday
 
-At 7 GB/h, the 1265 free slots are about **7–8 days** of runway, and `/misc` has 1.6 TB free,
-so the slot budget runs out before the disk does — the same asymmetry that caused both
+At 6.8 GB/h the 1265 free slots were about **7–8 days** of runway, and `/misc` had 1.6 TB
+free, so the slot budget would run out before the disk — the same asymmetry that caused both
 outages.
 
-Options, in the order I'd take them:
+Both open items are now closed:
 
-1. **Re-enable a retention window.** 8 h held ~50 GB; 7 days would hold roughly 1.1 TB, which
-   fits `/misc` and makes slot consumption predictable. Removing retention is what turned a
-   bounded system into a 7-day timer.
-2. **Raise `volumeSizeLimitMB`** (e.g. 4000) rather than `maxVolumes` — same data, a quarter of
-   the ids, and far less churn for the master and the vacuum worker.
-3. **Keep the alert honest.** The threshold now fires at 50 free slots (~10 h at current
-   burn); it was 5, which at 1720 slots was about an hour of warning.
+1. **Retention is back on: 7 days** on the `telegraf` database (26 Oct). Sized from the
+   measured rate, not by feel: 6.8 GB/h × 168 h ≈ **1.15 TB steady state**, which is ~1150 of
+   the 1720 slots with ~570 free for compaction churn, and fits comfortably in the 1.6 TB
+   free on `/misc`. Enforcement was verified on a throwaway database with a 1 h window — the
+   ingester rejected a 3 h-old write with `write timestamp ... is older than the retention
+   period cutoff ...`, which is stronger evidence than waiting for the sweeper.
+2. **`/misc` is persistent.** `/etc/fstab` pins it by UUID
+   (`UUID=1cb2cc54-… /misc ext4 defaults,nofail,x-systemd.device-timeout=30s 0 2`),
+   `misc.mount` is active, and `findmnt --verify` reports no errors. `nofail` is deliberate:
+   a dead disk should not block the node's boot — the volume pod's initContainer then fails
+   closed instead.
 
-Also outstanding from the config review: `/misc` has no `/etc/fstab` entry, so a reboot drops
-the mount and the volume pod will (correctly) refuse to start until it is remounted.
+Still worth doing at the next quiet moment: raise `volumeSizeLimitMB` (e.g. 4000) so the same
+data uses a quarter of the volume ids, which cuts master and vacuum churn for free.
 
 ---
 

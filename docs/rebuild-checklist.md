@@ -38,8 +38,10 @@ to the existing data1 PVC. Before installing or upgrading:
 
 - Verify the correct filesystem is mounted at `/misc` on getup. The chart uses
   `/misc/object_store/` on the host and `/misc/` in the container.
-- Make the mount persistent before relying on reboot recovery. At the last
-  verification `/etc/fstab` had no entry; this remains a host-administration task.
+- The mount is persistent: `/etc/fstab` carries the disk by UUID
+  (`UUID=1cb2cc54-… /misc ext4 defaults,nofail,x-systemd.device-timeout=30s 0 2`), and
+  `findmnt --verify` reports no errors. `nofail` keeps a failed disk from blocking boot —
+  the volume pod's guard then fails closed instead.
 - Verify the data1 PV's required node affinity selects getup. There is no pod
   `nodeSelector`; a fresh dynamically provisioned PVC is not guaranteed to land
   on getup. Arrange the correct local PV binding before starting the volume pod.
@@ -177,11 +179,12 @@ kubectl -n influxdb3 exec db3-influxdb3-enterprise-querier-0 -- sh -c \
      --token '$TOKEN' --host http://127.0.0.1:8181"
 ```
 
-Eight hours is what keeps the lab inside its disk budget; without retention the bucket grew
-~6-8 GB/h and exhausted the volume slots twice. This lab later added the 1.8 TB `misc`
-disk and removed the window, which buys roughly twelve days at 6 GB/h before either the
-disk (1.7 TB free) or the slots (1720) run out — so a window is still the sane default, and
-`min(time)` is how you check what is actually enforced. Change it later, and verify:
+Without retention the bucket grew ~6-8 GB/h and exhausted the volume slots twice. The lab
+runs **7 days**, which at the measured 6.8 GB/h is ~1.15 TB steady state — about 1150 of the
+1720 slots, leaving ~570 free for compaction churn. Size any window the same way: steady
+state ≈ rate × window, and it has to fit both the slot budget and the disk that holds it.
+`min(time)` is how you check what is enforced, and a write older than the cutoff is rejected
+rather than silently dropped. Change it later, and verify:
 
 ```shell
 kubectl -n influxdb3 exec db3-influxdb3-enterprise-querier-0 -- sh -c \
