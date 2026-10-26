@@ -9,6 +9,22 @@
 # port is only claimed on one node.
 # Local Kubernetes Grafana deployment; plain HTTP is for a trusted LAN only.
 replicas: 1
+# 1 replica with a ReadWriteOnce local-path PVC. The default RollingUpdate surges a new
+# pod that cannot mount the claim while the old one holds it, so the rollout deadlocks and
+# `helm upgrade --wait` times out ("Pending termination: 1"). maxSurge: 0 makes it
+# terminate-then-start, which is what Recreate would do but without leaving the live
+# rollingUpdate block that makes `type: Recreate` invalid.
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 0
+    maxUnavailable: 1
+# Server-side image rendering: /render/... returns panel PNGs. The chart deploys the
+# renderer and points Grafana at it. Without it /render returns 500.
+imageRenderer:
+  enabled: true
+  image:
+    tag: v5.12.9
 service:
   type: ClusterIP
 # A small node-pinned reverse proxy exposes :3000 outside the NodePort range.

@@ -197,7 +197,8 @@ def hide_time(rename=None):
 Q_DISK_PCT = 'SELECT max("used_percent") AS "used" FROM "seaweedfs_disk" WHERE $timeFilter GROUP BY "path"'
 Q_DISK_USED = 'SELECT max("used_bytes") AS "used" FROM "seaweedfs_disk" WHERE $timeFilter GROUP BY "path"'
 Q_DISK_FREE = 'SELECT min("free_bytes") AS "free" FROM "seaweedfs_disk" WHERE $timeFilter GROUP BY "path"'
-Q_SLOTS = 'SELECT max("free_volume_slots") AS "free_slots" FROM "seaweedfs_volume_server" WHERE $timeFilter GROUP BY "server"'
+Q_SLOTS = ('SELECT last("free_volume_slots") AS "free_slots" FROM "seaweedfs_volume_server" '
+           'WHERE $timeFilter GROUP BY "server"')
 Q_TS_DISK_USED = ('SELECT max("used_bytes") AS "used" FROM "seaweedfs_disk" '
                   'WHERE $timeFilter GROUP BY time($__interval), "path" fill(linear)')
 Q_TS_DISK_FREE = ('SELECT min("free_bytes") AS "free" FROM "seaweedfs_disk" '
@@ -420,7 +421,8 @@ def collections_growth():
 # --- per-volume inventory (requires detailed_volumes = true in the Telegraf input)
 Q_VOL_COUNT = ('SELECT max("volume_count") AS "volumes" FROM "seaweedfs_cluster" '
                'WHERE $timeFilter')
-Q_VOL_FREE = 'SELECT max("free_volume_slots") AS "free" FROM "seaweedfs_cluster" WHERE $timeFilter'
+# last(), not max(): a capacity stat must show the current value, not the window's best
+Q_VOL_FREE = 'SELECT last("free_volume_slots") AS "free" FROM "seaweedfs_cluster" WHERE $timeFilter'
 Q_VOL_FULLEST = 'SELECT max("size_bytes") AS "fullest" FROM "seaweedfs_volume" WHERE $timeFilter'
 Q_VOL_TRASH = 'SELECT max("deleted_bytes") AS "trash" FROM "seaweedfs_volume" WHERE $timeFilter'
 Q_VOL_TABLE = ('SELECT max("size_bytes") AS "size_bytes", max("file_count") AS "file_count", '

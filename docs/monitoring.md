@@ -160,6 +160,24 @@ Two small families are deliberately *not* auto-charted, with the reason in the s
 on the Volumes dashboard), plus the ~70 `influxdb3_compactor_*` metrics, which the five
 curated compaction panels above replace.
 
+### Exporting panels as images
+
+The Grafana release runs the **image renderer** (`imageRenderer.enabled` in
+`helm/grafana-values.yaml`), so `GET /render/d/<uid>/<slug>?width=&height=&from=&to=` returns
+a PNG of the whole dashboard, and `/render/d-solo/...&panelId=N` returns one panel. The
+weekly reports use it:
+
+```shell
+curl -u "admin:$PASSWORD" -o screenshots/week.png \
+  "http://192.168.0.21:3000/render/d/seaweedfs-cluster/seaweedfs-e28094-cluster-overview?width=1600&height=1150&from=now-72h&to=now&kiosk"
+```
+
+Two things to know: the renderer needs a callback URL Grafana can reach
+(`GF_RENDERING_CALLBACK_URL`) — the chart wires both sides; and the Grafana Deployment runs
+with `maxSurge: 0`, because a single replica with a `ReadWriteOnce` local-path PVC deadlocks
+a normal rolling update (the new pod cannot mount the claim the old one still holds, so
+`helm upgrade --wait` times out with "Pending termination").
+
 ### Panel gotchas worth knowing
 
 - InfluxQL aggregate frames carry **no labels**, so series names arrive as
