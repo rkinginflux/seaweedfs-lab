@@ -568,9 +568,10 @@ def timeseries_panel(title, targets, description, unit, grid_pos, ref_start=0,
                        "thresholdsStyle": {"mode": "dashed"}},
             "thresholds": {"mode": "absolute",
                            "steps": steps or thresholds(unit)["steps"]}}, "overrides": []},
-        "options": {"legend": {"displayMode": "table",
-                               "placement": "bottom" if len(targets) >= 4 else "right",
-                               "showLegend": True, "calcs": ["lastNotNull", "max"]},
+        # Legend at the bottom of every cell: a right-hand table squeezed the plot area on
+        # the wide panels and made rows of panels look different from each other.
+        "options": {"legend": {"displayMode": "list", "placement": "bottom",
+                               "showLegend": True},
                     "tooltip": {"mode": "multi", "sort": "desc"}},
     }
 
@@ -603,14 +604,19 @@ def stat_panel(title, query, unit, grid_pos, steps=None, desc=""):
 
 EXPANDED_GROUPS = {"Host / OS", "SeaweedFS"}
 
-# Some host metrics earn their own panel (and a narrower width) instead of sharing the
-# unit-based panel: cpu/mem/disk utilisation answer different questions and mixing them
-# made the legend unreadable.
+# Some host metrics earn their own panel instead of sharing the unit-based one: cpu, memory
+# and disk utilisation answer different questions and mixing them made the legend
+# unreadable. Panel sizes are uniform (PANEL_WIDTH x PANEL_HEIGHT) so every row lines up.
 PANEL_SPLIT = {
-    "cpu": ("CPU utilisation", 8),
-    "mem": ("memory utilisation", 8),
-    "disk": ("disk utilisation", 8),
+    "cpu": "CPU utilisation",
+    "mem": "memory utilisation",
+    "disk": "disk utilisation",
 }
+
+# One cell size for every timeseries panel: two per row of 24 columns, and a group with an
+# odd number of panels lets its last cell span the full width so no row ends half empty.
+PANEL_WIDTH = 12
+PANEL_HEIGHT = 9
 
 # Measurements deliberately left off the dashboard, with the reason. They still count as
 # covered, so the completeness check keeps its meaning.
@@ -637,7 +643,6 @@ def build(schema, tags, fields):
     measurements = sorted(schema)
     units: dict[str, str] = {}
     buckets: dict[tuple[str, str], list[dict]] = defaultdict(list)
-    widths: dict[tuple[str, str], int] = {}
     bucket_units: dict[tuple[str, str], str] = {}
     coverage: list[str] = []
 
@@ -656,9 +661,8 @@ def build(schema, tags, fields):
         short = name
         target["label"] = short
         target["measurement"] = name
-        label, width = PANEL_SPLIT.get(name, (UNIT_LABEL.get(unit, unit), 12))
+        label = PANEL_SPLIT.get(name, UNIT_LABEL.get(unit, unit))
         buckets[(group, label)].append(target)
-        widths[(group, label)] = width
         bucket_units[(group, label)] = unit
         units[name] = unit
         coverage.append(name)
@@ -692,7 +696,7 @@ def build(schema, tags, fields):
     ]
     for i, (title, query, unit, steps, desc) in enumerate(summary):
         panels.append(stat_panel(title, query, unit,
-                                 {"x": (i % 4) * 6, "y": i // 4 * 5, "w": 6, "h": 5},
+                                 {"x": (i % 3) * 8, "y": i // 3 * 5, "w": 8, "h": 5},
                                  steps=[{"color": c, "value": v} for c, v in steps], desc=desc))
     y = 10
 
@@ -705,11 +709,9 @@ def build(schema, tags, fields):
         if not keys:
             continue
         collapsed = group not in EXPANDED_GROUPS
-        group_panels = []
-        col, row_y, max_h = 0, y, 0
+        specs = []
         for label in dict.fromkeys(k[1] for k in keys):
             targets = buckets[(group, label)]
-            width = widths.get((group, label), 12)
             for chunk_start in range(0, len(targets), 6):
                 chunk = targets[chunk_start:chunk_start + 6]
                 title = group
@@ -724,14 +726,22 @@ def build(schema, tags, fields):
                     desc = PANEL_DESCRIPTIONS.get(
                         title,
                         "; ".join(f"{t['measurement']}: {t['desc']}" for t in chunk))
-                group_panels.append(timeseries_panel(
-                    title, chunk, desc, bucket_units.get((group, label), "none"),
-                    {"x": col, "y": row_y, "w": width, "h": 7}))
-                max_h = max(max_h, 7)
-                col += width
-                if col >= 24:
-                    col, row_y = 0, row_y + max_h
-                    max_h = 0
+                specs.append((title, chunk, desc, bucket_units.get((group, label), "none")))
+
+        # Lay the group out on a fixed grid rather than packing mixed widths: two equal
+        # cells per row, and a lone trailing cell takes the full width. Mixed widths used
+        # to wrap mid-row and leave half of a row empty (the old 8/12/6 mix in Host / OS).
+        group_panels = []
+        for i, (title, chunk, desc, unit) in enumerate(specs):
+            alone = i == len(specs) - 1 and i % 2 == 0
+            group_panels.append(timeseries_panel(
+                title, chunk, desc, unit,
+                {"x": 0 if i % 2 == 0 else PANEL_WIDTH,
+                 "y": y + 1 + (i // 2) * PANEL_HEIGHT,
+                 "w": 24 if alone else PANEL_WIDTH,
+                 "h": PANEL_HEIGHT}))
+        rows = (len(specs) + 1) // 2
+
         row_panel = row(group, y, collapsed=collapsed,
                         desc=GROUP_DESCRIPTIONS.get(group, ""))
         if collapsed:
@@ -742,7 +752,7 @@ def build(schema, tags, fields):
         else:
             panels.append(row_panel)
             panels.extend(group_panels)
-            y = row_y + (max_h or 7)
+            y = y + 1 + rows * PANEL_HEIGHT
 
 
     # ---- InfluxDB 3 compaction (Pacha Tree): the compactor's own /metrics, which the
@@ -763,7 +773,7 @@ def build(schema, tags, fields):
         "Do not alert on this alone: the metric reports 0 for a node that has never "
         "compacted, so a brand-new node looks perfect while holding a backlog. Alert on "
         "uncompacted snapshots.",
-        "s", {"x": 0, "y": y, "w": 12, "h": 8},
+        "s", {"x": 0, "y": y, "w": 12, "h": PANEL_HEIGHT},
         steps=[{"color": "green", "value": None}, {"color": "yellow", "value": 60},
                {"color": "red", "value": 300}]))
     panels.append(timeseries_panel(
@@ -774,14 +784,14 @@ def build(schema, tags, fields):
         "Snapshots discovered but not compacted, per ingest node. Each one pins its gen0 "
         "files into every query's scan set — this is the real cost of lag. Sustained >5 is "
         "worth a look; >20 means queries are reading a wide file set.",
-        "short", {"x": 12, "y": y, "w": 12, "h": 8},
+        "short", {"x": 12, "y": y, "w": 12, "h": PANEL_HEIGHT},
         steps=[{"color": "green", "value": None}, {"color": "yellow", "value": 5},
                {"color": "red", "value": 20}]))
-    y += 8
+    y += PANEL_HEIGHT
     panels.append(stat_panel(
         "Compactor primary",
         'SELECT last("gauge") AS "primary" FROM "influxdb3_compactor_is_primary" WHERE $timeFilter',
-        "none", {"x": 0, "y": y, "w": 6, "h": 6},
+        "none", {"x": 0, "y": y, "w": 8, "h": PANEL_HEIGHT},
         steps=[{"color": "red", "value": None}, {"color": "green", "value": 1}],
         desc="1 = this node holds the compactor lease and is scheduling compaction. No node "
              "reporting 1 means nothing is compacting; more than one for longer than a lease "
@@ -790,7 +800,7 @@ def build(schema, tags, fields):
         "Deferred snapshots",
         'SELECT last("gauge") AS "deferred" FROM "influxdb3_compactor_deferred_snapshots" '
         'WHERE $timeFilter GROUP BY "node_id"',
-        "short", {"x": 6, "y": y, "w": 6, "h": 6},
+        "short", {"x": 8, "y": y, "w": 8, "h": PANEL_HEIGHT},
         steps=[{"color": "green", "value": None}, {"color": "red", "value": 1}],
         desc="Snapshots that failed to compact and are accumulating. Non-zero is a gate, not "
              "just a symptom: --recover-deferred-snapshots only runs while every ingest node "
@@ -806,8 +816,8 @@ def build(schema, tags, fields):
         "Admission budget (--compactor-input-size-budget, default 50% of RAM) vs bytes in "
         "flight. Used pinned at the budget while uncompacted snapshots climb means capacity, "
         "not a stall: raise the budget or add a compact node.",
-        "bytes", {"x": 12, "y": y, "w": 12, "h": 6}))
-    y += 6
+        "bytes", {"x": 16, "y": y, "w": 8, "h": PANEL_HEIGHT}))
+    y += PANEL_HEIGHT
 
     dash = {
         "uid": DASH_UID, "title": DASH_TITLE,
