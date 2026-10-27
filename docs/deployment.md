@@ -44,11 +44,13 @@ kubectl -n influxdb3 create secret generic telegraf-influxdb3-token \
 ## 2. SeaweedFS
 
 The values include two volume data directories: the original data1 PVC and
-getup's `/misc/object_store/` hostPath, mounted as `/misc` in the pod. Before
-running Helm, follow the [storage preflight](rebuild-checklist.md#1-seaweedfs-namespace-s3):
-verify the dedicated mount and data1 PV affinity. No pod `nodeSelector` is used.
-The host's `/misc` boot mount is still unresolved; the init guard fails closed
-instead of using the root disk. See [the runbook](runbook.md#additional-misc-disk-on-getup).
+getup's `/misc/object_store/` hostPath, mounted as `/misc` in the pod. The volume
+server carries `nodeSelector: kubernetes.io/hostname: getup` so it runs on the node
+that owns the hostPath — without it a fresh install lets local-path bind data1 on
+a node with no `/misc`, and the init guard then refuses to start. Before running
+Helm, follow the [storage preflight](rebuild-checklist.md#1-seaweedfs-namespace-s3):
+confirm `/misc` is the separate ext4 disk. See
+[the runbook](runbook.md#additional-misc-disk-on-getup).
 
 ```shell
 helm install seaweedfs seaweedfs/seaweedfs -n s3 --version 4.48.0 \

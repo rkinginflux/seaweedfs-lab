@@ -69,9 +69,21 @@ volume:
   #   35/35 slots  -> S3 PUTs 500, ingester stalled
   #   46/46 slots  -> same failure again, three hours later, at ~8 GB/h growth
   # data1 retains 220 slots; /misc adds 1500 with disk headroom on the 1.8 TiB disk.
-  # No nodeSelector: the existing data1 PV's node affinity already selects getup.
-  # On a fresh cluster, ensure the data1 PV is bound to the node holding /misc;
-  # this values file alone does not guarantee correct first-time placement.
+  #
+  # The volume server is pinned to getup, the node that owns the /misc disk.
+  #
+  # The chart mounts host /misc/object_store/ into the pod, and a hostPath is node-local:
+  # the pod MUST land on the node with the disk. local-path provisions each PVC on
+  # whichever node the pod first schedules to, so with no nodeSelector a fresh cluster
+  # binds data1 wherever the scheduler feels like it. Observed on a clean install: the
+  # pod went to `jump`, data1 bound there, and verify-misc-disk correctly refused to
+  # start ("/misc is not a separate disk") because jump's /misc is root-backed.
+  #
+  # Pinning the pod is what makes first-time placement correct; the alternative is to
+  # pre-create data1's PV with node affinity for getup, which a fresh install has no
+  # chance to do. The cost is that getup is now a single point of failure for the whole
+  # volume server — it already was, since the disk lives only there.
+  nodeSelector: "kubernetes.io/hostname: getup\n"
   #
   # If slot churn becomes a problem again, raise volumeSizeLimitMB rather than
   # maxVolumes: 4000 MB volumes would burn a quarter of the ids for the same data.

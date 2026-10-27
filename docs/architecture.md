@@ -103,14 +103,18 @@ Helm revision 7 registers `/data1` and `/misc` in the same volume-server process
 with `-max 220,1500`. The chart maps host `/misc/object_store/` to container
 `/misc/`; it does not replace or migrate the existing data1 PVC.
 
-There is deliberately no pod `nodeSelector`. The existing data1 PV has required
-node affinity for `getup`, which already constrains scheduling. On a rebuild,
-verify that affinity before starting: these values do not bind a new PVC to getup
-by themselves. A second disk on the same node does not add availability.
+The volume server is pinned to `getup` with a pod `nodeSelector`, because a
+hostPath is node-local and must be next to the disk it names. Without the pin a
+clean install let local-path bind data1 on a node with no `/misc` (observed on
+`jump`), and the startup guard then refused to start. The pin is what makes
+first-time placement correct; the data1 PV's own affinity follows from it once the
+PVC is provisioned on getup. A second disk on the same node does not add
+availability — getup is still the only node that can run the volume server.
 
 The `verify-misc-disk` init container compares filesystem device IDs against
 root-backed data1. This prevents silently writing to the root filesystem when
 the dedicated disk is absent, but is not a disk-identity check and depends on
-data1 remaining root-backed. `/misc` was mounted as ext4 from `/dev/sdb1` during
-verification; **boot persistence is still unresolved** because `/etc/fstab` had
-no entry. The guard does not remount it. See the runbook before rebooting.
+data1 remaining root-backed. `/misc` is ext4 on `/dev/sdb1`, live and pinned in
+`/etc/fstab` by UUID with `nofail`; `nofail` means a failed disk still lets the
+node boot, and the guard then fails closed. The guard checks the mount, it does
+not perform or repair it. See the runbook before rebooting.

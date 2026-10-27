@@ -71,14 +71,21 @@ The deployed values preserve the existing data1 PVC (220 slots) and add
 appends `/object_store/` to that prefix: host `/misc/object_store/` is mounted
 at container `/misc/`.
 
-No `nodeSelector` is configured. The existing data1 PV has required node affinity
-for getup; verify this before a rebuild or any PVC replacement. Do not delete the
-PVC to fix scheduling, and do not assume the hostPath follows the pod.
+The volume server is pinned to getup with `nodeSelector:
+"kubernetes.io/hostname: getup\n"`. That pin is required, not cosmetic: the
+hostPath does not follow the pod, and local-path provisions data1 on whatever node
+the pod lands on. A clean install without the pin placed the pod on `jump`, bound
+data1 there, and the guard aborted with `/misc is not a separate disk`. If you
+replace data1's PVC, do it while the pod is pinned — a PVC left bound to another
+node leaves the pinned pod unschedulable, which is the intended fail-closed
+behaviour rather than a scheduling bug to work around.
 
-**Before rebooting getup:** `/misc` is mounted now, but boot persistence has not
-been configured in `/etc/fstab`. Have the host administrator add and validate an
-appropriate persistent mount by filesystem UUID. Do not format the disk or
-replace its contents. That host change was not part of the SeaweedFS rollout.
+**Before rebooting getup:** `/misc` is mounted now and `/etc/fstab` pins it by
+UUID with `nofail` (see above). Reboot-persistence of that host mount is a host
+concern and was configured outside the SeaweedFS rollout: if it is missing after a
+boot, the volume pod refuses to start rather than writing to the root disk. Restore
+the mount before restarting the pod; do not format the disk, replace its contents,
+or bypass the guard.
 
 The `verify-misc-disk` init container refuses startup when misc and root-backed
 data1 have the same filesystem device ID. It does not mount the disk, validate

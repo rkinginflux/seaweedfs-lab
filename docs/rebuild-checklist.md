@@ -42,11 +42,18 @@ to the existing data1 PVC. Before installing or upgrading:
   (`UUID=1cb2cc54-… /misc ext4 defaults,nofail,x-systemd.device-timeout=30s 0 2`), and
   `findmnt --verify` reports no errors. `nofail` keeps a failed disk from blocking boot —
   the volume pod's guard then fails closed instead.
-- Verify the data1 PV's required node affinity selects getup. There is no pod
-  `nodeSelector`; a fresh dynamically provisioned PVC is not guaranteed to land
-  on getup. Arrange the correct local PV binding before starting the volume pod.
+- The volume server is now pinned to getup with
+  `nodeSelector: "kubernetes.io/hostname: getup\n"` in the values. This is new: a
+  hostPath is node-local, and local-path provisions each PVC on whichever node the
+  pod first schedules to, so without the pin a fresh install binds data1 anywhere.
+  That is not hypothetical — a clean install placed the pod on `jump`, bound data1
+  there, and `verify-misc-disk` correctly refused to start
+  (`ERROR: /misc is not a separate disk`). With the pin, a new data1 PVC binds on
+  getup, which is where the disk is.
+- If you ever change the node: move the disk with it, and delete data1's PVC first.
+  A PVC left bound to the old node makes the pinned pod unschedulable, not slow.
 - Keep the startup guard: it requires misc and root-backed data1 to have distinct
-  device IDs. It is not a replacement for correct PV binding or mount persistence.
+  device IDs. It is not a replacement for the pin or for mount persistence.
 
 See [the /misc runbook](runbook.md#additional-misc-disk-on-getup) for checks and
 the observed revision-7 rollout. Do not delete existing PVCs for a rebuild.

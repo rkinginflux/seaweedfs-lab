@@ -24,8 +24,10 @@ VERSION   ?= 4.48.0
 VALUES    ?= seaweedfs-values.yaml
 TIMEOUT   ?= 4m
 
-# kubectl/helm read KUBECONFIG from the environment; default to the usual location.
-KUBECONFIG ?= $(HOME)/.kube/config
+# kubectl/helm read KUBECONFIG from the environment. When it is not set, use the usual
+# location and fall back to a kubeadm admin.conf: this host has no ~/.kube/config, so
+# every target used to fail with "dial tcp 127.0.0.1:8080: connection refused".
+KUBECONFIG ?= $(firstword $(wildcard $(HOME)/.kube/config $(HOME)/.kube/admin.conf))
 export KUBECONFIG
 
 HELM := helm -n $(NAMESPACE)
